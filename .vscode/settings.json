@@ -1,0 +1,13 @@
+{
+    "python.linting.flake8Enabled": true,
+    "python.linting.enabled": true,
+    "cSpell.words": [
+        "alos",
+        "mapa",
+        "rasterio",
+        "stac"
+    ],
+    "terminal.integrated.env.osx": {
+        "PYTHONBREAKPOINT": "ipdb.set_trace"
+      }
+}

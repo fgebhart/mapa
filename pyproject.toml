@@ -1,0 +1,45 @@
+[tool.poetry]
+name = "mapa"
+version = "0.1.0"
+description = "🌍 Create 3d-printable STLs from satellite elevation data 🌏"
+authors = ["Fabian Gebhart"]
+
+[tool.poetry.dependencies]
+python = "~3.8"
+click = "^8.0.1"
+numpy = "^1.20"
+numba = "^0.54.1"
+notebook = "^6.4.6"
+ipyleaflet = "^0.14.0"
+pystac-client = "^0.3.1"
+rasterio = "^1.2.10"
+matplotlib = "^3.5.0"
+requests = "^2.26.0"
+ipdb = "^0.13.9"
+haversine = "^2.5.1"
+numpy-stl = "^2.16.3"
+geojson = "^2.5.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2"
+ipython = "^7.25.0"
+flake8 = "^3.9.2"
+black = "^21.6b0"
+isort = "^5.9.3"
+pytest-cov = "^2.12.1"
+snakeviz = "^2.1.1"
+pre-commit = "^2.15.0"
+notebook = "^6.4.6"
+
+[tool.poetry.scripts]
+dem2stl = "mapa.cli:dem2stl"
+mapa = "mapa.cli:mapa"
+
+[tool.black]
+target_version = ["py38"]
+line-length = 121
+
+[tool.isort]
+multi_line_output = 3
+line_length = 121
+include_trailing_comma = true

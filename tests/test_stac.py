@@ -1,0 +1,22 @@
+from mapa.stac import _turn_geojson_into_bbox, fetch_stac_items_for_bbox
+
+
+def test__turn_geojson_into_bbox(geojson_bbox):
+    assert _turn_geojson_into_bbox(geojson_bbox) == [8.076906, 48.098505, 8.107111, 48.115011]
+
+
+def test_fetch_stac_item_for_bbox():
+    multiple_stac_items_bbox = {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [18.289063, -34.260546],
+                [18.289063, -33.87148],
+                [18.817643, -33.87148],
+                [18.817643, -34.260546],
+                [18.289063, -34.260546],
+            ]
+        ],
+    }
+    tiffs = fetch_stac_items_for_bbox(geojson=multiple_stac_items_bbox)
+    assert len(tiffs) == 2
