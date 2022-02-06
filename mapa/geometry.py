@@ -251,7 +251,6 @@ def compute_all_triangles(
     return np.vstack((dem_triangles, side_triangles, bottom_triangles))
 
 
-# jit with numba?
 def _find_dimensions_of_mesh(mesh_obj) -> Tuple[float]:
     minx = maxx = miny = maxy = minz = maxz = None
     for p in mesh_obj.points:
