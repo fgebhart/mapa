@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mapa"
-version = "0.1.1"
+version = "0.1.2"
 description = "🌍 Create 3d-printable STLs from satellite elevation data 🌏"
 authors = ["Fabian Gebhart"]
 homepage = "https://github.com/fgebhart/mapa"
