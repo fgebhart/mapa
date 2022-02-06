@@ -28,4 +28,4 @@ jobs:
 
     - name: Run Tests
       run: |
-        poetry run pytest tests/ -vv 
+        poetry run pytest tests/ -vv  --color=yes
