@@ -1,5 +1,6 @@
 import subprocess
 from pathlib import Path
+from typing import Union
 
 import click
 
@@ -51,7 +52,7 @@ from mapa import conf, convert_tif_to_stl
 @click.version_option()
 def dem2stl(
     input: str,
-    output: str,
+    output: Union[str, None],
     z_offset: float,
     z_scale: float,
     max_res: bool = False,

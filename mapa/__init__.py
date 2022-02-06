@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Union
 
 import click
 import numpy as np
@@ -92,7 +93,7 @@ def convert_tif_to_stl(
     input_file: str,
     as_ascii: bool,
     model_size: int,
-    output_file: str,
+    output_file: Union[str, None],
     max_res: bool,
     z_offset: float,
     z_scale: float,
@@ -100,7 +101,7 @@ def convert_tif_to_stl(
 ) -> Path:
     _verify_input_is_valid(input_file)
     if output_file is None:
-        output_file = Path.cwd() / str(Path(input_file).name).replace(".tiff", ".stl").replace(".tif", ".stl")
+        output_file = Path.home() / str(Path(input_file).name).replace(".tiff", ".stl").replace(".tif", ".stl")
     _verify_output_is_valid(output_file)
 
     tiff = rio.open(input_file)
