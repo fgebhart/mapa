@@ -2,11 +2,8 @@ import tempfile
 from functools import wraps
 from pathlib import Path
 from time import time
-from typing import Union
 
 import click
-import matplotlib.pyplot as plt
-import numpy as np
 import rasterio as rio
 import requests
 from rasterio.plot import show
@@ -49,22 +46,6 @@ def _path_to_clipped_tiff(bbox_hash: str) -> Path:
     return TMPDIR() / f"clipped_{bbox_hash}.tiff"
 
 
-def show_array(array: np.ndarray):
-    plt.imshow(array, interpolation="none")
-    plt.show()
-
-
 def show_tiff(path: Path) -> None:
     tiff = rio.open(path)
     show((tiff, 1), cmap="terrain")
-
-
-def debug_image(debug: bool, image: Union[np.ndarray, Path], message: str) -> None:
-    if debug:
-        click.echo(message)
-        if isinstance(image, np.ndarray):
-            show_array(image)
-        elif isinstance(image, Path):
-            show_tiff(image)
-        else:
-            click.echo(f"ERROR: cannot show image of type: {type(image)}")

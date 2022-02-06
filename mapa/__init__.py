@@ -16,7 +16,7 @@ from mapa.raster import (
     remove_empty_first_and_last_rows_and_cols,
 )
 from mapa.stac import fetch_stac_items_for_bbox
-from mapa.utils import _path_to_clipped_tiff, debug_image, timing
+from mapa.utils import _path_to_clipped_tiff, timing
 
 
 def _verify_input_is_valid(input: str):
@@ -61,15 +61,12 @@ def convert_array_to_stl(
     make_square: bool,
     elevation_scale: float,
     output_file: Path,
-    debug: bool,
 ) -> Path:
     # drop higher dimension to get 2-dimensional (x * y) array
     array = array[0, :, :]
-    debug_image(debug, array, "input array:")
     array = remove_empty_first_and_last_rows_and_cols(array)
     if make_square:
         array = cut_array_to_square(array)
-        debug_image(debug, array, "array cut to square: ")
 
     x, y = array.shape
     if max_res:
@@ -83,7 +80,6 @@ def convert_array_to_stl(
         if bin_fac > 1:
             click.echo(f"{'🔍  reducing image resolution...':<50s}", nl=False)
             array = reduce_resolution(array, bin_factor=bin_fac)
-            debug_image(debug, array, "reduced resolution of array: ")
     combined_z_scale = z_scale * elevation_scale
     triangles = compute_all_triangles(array, model_size, z_offset, combined_z_scale)
     click.echo(f"{'💾  saving data to stl file...':<50s}", nl=False)
@@ -101,14 +97,12 @@ def convert_tif_to_stl(
     z_offset: float,
     z_scale: float,
     make_square: bool,
-    debug: bool = False,
 ) -> Path:
     _verify_input_is_valid(input_file)
     if output_file is None:
         output_file = Path.cwd() / str(Path(input_file).name).replace(".tiff", ".stl").replace(".tif", ".stl")
     _verify_output_is_valid(output_file)
 
-    debug_image(debug, input_file, "clipped tiff: ")
     tiff = rio.open(input_file)
     elevation_scale = determine_elevation_scale(tiff, model_size)
     array = tiff.read()
@@ -123,27 +117,25 @@ def convert_tif_to_stl(
         make_square=make_square,
         elevation_scale=elevation_scale,
         output_file=output_file,
-        debug=debug,
     )
 
 
-def _fetch_merge_and_clip_tiffs(bbox_geojson: dict, debug: bool, bbox_hash: str) -> Path:
-    tiffs = fetch_stac_items_for_bbox(bbox_geojson, debug)
+def _fetch_merge_and_clip_tiffs(bbox_geojson: dict, bbox_hash: str) -> Path:
+    tiffs = fetch_stac_items_for_bbox(bbox_geojson)
     if len(tiffs) > 1:
         merged_tiff = merge_tiffs(tiffs, bbox_hash)
     else:
         merged_tiff = tiffs[0]
-    debug_image(debug, merged_tiff, "merged tiff: ")
     return clip_tiff_to_bbox(merged_tiff, bbox_geojson, bbox_hash)
 
 
-def _get_tiff_for_bbox(bbox_geojson: dict, debug: bool) -> Path:
+def _get_tiff_for_bbox(bbox_geojson: dict) -> Path:
     bbox_hash = _get_hash_of_geojson(bbox_geojson)
     if _tiff_for_bbox_is_cached(bbox_hash):
         click.echo("🚀  using cached tiff...                           ✅ (0.0s)")
         return _path_to_clipped_tiff(bbox_hash)
     else:
-        return _fetch_merge_and_clip_tiffs(bbox_geojson, debug, bbox_hash)
+        return _fetch_merge_and_clip_tiffs(bbox_geojson, bbox_hash)
 
 
 def create_stl_for_bbox(
@@ -155,7 +147,6 @@ def create_stl_for_bbox(
     z_offset: float = 0.0,
     z_scale: float = 1.0,
     make_square: bool = False,
-    debug: bool = False,
 ) -> Path:
     if bbox_geometry is None:
         print("ERROR: make sure to draw a rectangle on the map first!")
@@ -163,7 +154,7 @@ def create_stl_for_bbox(
 
     click.echo("⏳  converting bounding box to STL file... \n")
 
-    tiff = _get_tiff_for_bbox(bbox_geometry, debug)
+    tiff = _get_tiff_for_bbox(bbox_geometry)
     output_file = convert_tif_to_stl(
         input_file=tiff,
         as_ascii=as_ascii,
@@ -173,6 +164,5 @@ def create_stl_for_bbox(
         z_offset=z_offset,
         z_scale=z_scale,
         make_square=make_square,
-        debug=debug,
     )
     return output_file
