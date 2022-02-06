@@ -6,7 +6,7 @@ import geojson
 from pystac_client import Client
 
 from mapa import conf
-from mapa.utils import TMPDIR, debug_image, download_file, timing
+from mapa.utils import TMPDIR, download_file, timing
 
 
 def _bbox(coord_list):
@@ -23,7 +23,7 @@ def _turn_geojson_into_bbox(geojson_bbox: dict) -> List[float]:
 
 
 @timing
-def fetch_stac_items_for_bbox(geojson: dict, debug: bool = False) -> List[Path]:
+def fetch_stac_items_for_bbox(geojson: dict) -> List[Path]:
     click.echo(f"{'🏞  fetching tiff '}", nl=False)
     bbox = _turn_geojson_into_bbox(geojson)
     client = Client.open(conf.PLANETARY_COMPUTER_API_URL, ignore_conformance=True)
@@ -37,7 +37,6 @@ def fetch_stac_items_for_bbox(geojson: dict, debug: bool = False) -> List[Path]:
             url = item.assets["data"].href
             alos_dem_stac_tif = TMPDIR() / f"alos_dem_stac_{i}.tiff"
             files.append(download_file(url, alos_dem_stac_tif))
-            debug_image(debug, alos_dem_stac_tif, f"fetched stac item {alos_dem_stac_tif.name}: ")
         return files
     else:
         raise ValueError("Could not find the desired STAC item for the given bounding box.")

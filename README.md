@@ -67,6 +67,10 @@ from mapa import convert_tif_to_stl
 path_to_stl = convert_tif_to_stl(...)
 ```
 
+## Changelog
+
+See [Releases](https://github.com/fgebhart/mapa/releases).
+
 
 ## Contributing
 
