@@ -1,5 +1,17 @@
 # mapa 🌍
-Create 3d-printable STLs from satellite elevation data
+
+[![PyPI](https://badge.fury.io/py/mapa.svg)](https://badge.fury.io/py/mapa)
+[![Python](https://img.shields.io/pypi/pyversions/mapa.svg?style=plastic)](https://badge.fury.io/py/mapa)
+[![Downloads](https://pepy.tech/badge/mapa/month)](https://pepy.tech/project/mapa)
+[![Python Tests](https://github.com/fgebhart/mapa/actions/workflows/test.yml/badge.svg)](https://github.com/fgebhart/mapa/actions/workflows/test.yml)
+
+`mapa` let's you create 3d-printable [STL](https://en.wikipedia.org/wiki/STL_(file_format)) files from satellite
+elevation data (using [DEM](https://en.wikipedia.org/wiki/Digital_elevation_model) data).
+
+Under the hood `mapa` uses:
+* [numpy](https://numpy.org/) and [numba](https://numba.pydata.org/) to crunch large amounts of data in little time
+* [ALOS DEM](https://planetarycomputer.microsoft.com/dataset/alos-dem) satellite data (max resolution of 30m) provided by
+  [Planetary Computer](https://planetarycomputer.microsoft.com/)
 
 
 ## Installation
@@ -8,17 +20,20 @@ pip install mapa
 ```
 
 ## Usage
-mapa uses numpy and numba under the hood to crunch large amounts of data in little time.
+`mapa` provides the following approaches for creating STL files:
 
-mapa provides the following approaches for creating STL files:
-
-### 1. Using the mapa interactive map
+### 1. Using the `mapa` interactive map
 The easiest way is using the `mapa` cli. Simply type
 ```
 mapa
 ```
 A [jupyter notebook](https://jupyter.org/) will be started with an interactive map. Follow the described steps by
 executing the cells to create a 3d model of whatever place you like.
+
+ Choose bounding box       |  Create STL file
+:-------------------------:|:-------------------------:
+![](https://i.imgur.com/76hcx9N.jpg)  |  ![](https://i.imgur.com/llvxlrk.png)
+
 
 ### 2. Using the dem2stl cli
 The `dem2stl` cli lets you create a 3d-printable STL file based on your tiff file. You can run a demo computation to get
@@ -59,8 +74,8 @@ Options:
   --help                Show this message and exit.
 ```
 
-### 3. Using mapa as python library
-In case you are building your own application you can simply use mapa's functionality as a within your application by importing the modules functions.
+### 3. Using `mapa` as python library
+In case you are building your own application you can simply use `mapa`'s functionality as a within your application by importing the modules functions.
 ```python
 from mapa import convert_tif_to_stl
 
@@ -74,4 +89,4 @@ See [Releases](https://github.com/fgebhart/mapa/releases).
 
 ## Contributing
 
-Contributions are welcome.
+Contributions, feedback or issues are welcome.
