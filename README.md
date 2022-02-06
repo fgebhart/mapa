@@ -12,7 +12,7 @@ mapa uses numpy and numba under the hood to crunch large amounts of data in litt
 
 mapa provides the following approaches for creating STL files:
 
-### 2. Using the mapa interactive map
+### 1. Using the mapa interactive map
 The easiest way is using the `mapa` cli. Simply type
 ```
 mapa
@@ -20,7 +20,7 @@ mapa
 A [jupyter notebook](https://jupyter.org/) will be started with an interactive map. Follow the described steps by
 executing the cells to create a 3d model of whatever place you like.
 
-### 1. Using the dem2stl cli
+### 2. Using the dem2stl cli
 The `dem2stl` cli lets you create a 3d-printable STL file based on your tiff file. You can run a demo computation to get
 a feeling of how the output STL will look like:
 ```
