@@ -2,10 +2,10 @@ import tempfile
 from functools import wraps
 from pathlib import Path
 from time import time
+from urllib import request
 
 import click
 import rasterio as rio
-import requests
 from rasterio.plot import show
 
 
@@ -25,9 +25,7 @@ def timing(f):
 
 
 def download_file(url: str, local_file: Path) -> Path:
-    data = requests.get(url, stream=True)
-    with open(local_file, "wb") as file:
-        file.write(data.content)
+    request.urlretrieve(url, local_file)
     return local_file
 
 
