@@ -5,7 +5,7 @@ def test__turn_geojson_into_bbox(geojson_bbox):
     assert _turn_geojson_into_bbox(geojson_bbox) == [8.076906, 48.098505, 8.107111, 48.115011]
 
 
-def test_fetch_stac_item_for_bbox():
+def test_fetch_stac_items_for_bbox():
     multiple_stac_items_bbox = {
         "type": "Polygon",
         "coordinates": [

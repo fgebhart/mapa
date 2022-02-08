@@ -7,7 +7,7 @@ import rasterio as rio
 from stl import Mode, mesh
 
 from mapa import conf
-from mapa.caching import _get_hash_of_geojson, _tiff_for_bbox_is_cached
+from mapa.caching import get_hash_of_geojson, tiff_for_bbox_is_cached
 from mapa.geometry import compute_all_triangles, reduce_resolution
 from mapa.raster import (
     clip_tiff_to_bbox,
@@ -131,8 +131,8 @@ def _fetch_merge_and_clip_tiffs(bbox_geojson: dict, bbox_hash: str) -> Path:
 
 
 def _get_tiff_for_bbox(bbox_geojson: dict) -> Path:
-    bbox_hash = _get_hash_of_geojson(bbox_geojson)
-    if _tiff_for_bbox_is_cached(bbox_hash):
+    bbox_hash = get_hash_of_geojson(bbox_geojson)
+    if tiff_for_bbox_is_cached(bbox_hash):
         click.echo("🚀  using cached tiff...                           ✅ (0.0s)")
         return _path_to_clipped_tiff(bbox_hash)
     else:
