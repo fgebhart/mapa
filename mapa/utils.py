@@ -24,6 +24,7 @@ def timing(f):
     return wrap
 
 
+@timing
 def download_file(url: str, local_file: Path) -> Path:
     request.urlretrieve(url, local_file)
     return local_file
