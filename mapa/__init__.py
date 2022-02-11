@@ -72,8 +72,8 @@ def convert_array_to_stl(
     x, y = array.shape
     if max_res:
         if x * y > conf.PERFORMANCE_WARNING_THRESHOLD:
-            click.warning(
-                "⛔️  Warning: Using max_res=True on the selected region might cause performance issues. "
+            click.echo(
+                "⛔️  Warning: Using max_res=True on the given bounding box might consume a lot of time and memory. "
                 "Consider setting max_res=False."
             )
     else:
