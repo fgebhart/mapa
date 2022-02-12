@@ -30,10 +30,12 @@ mapa
 A [jupyter notebook](https://jupyter.org/) will be started with an interactive map. Follow the described steps by
 executing the cells to create a 3d model of whatever place you like.
 
- Choose bounding box       |  Create STL file
+ 1. Choose bounding box    |  2. Create STL file
 :-------------------------:|:-------------------------:
 ![](https://i.imgur.com/76hcx9N.jpg)  |  ![](https://i.imgur.com/llvxlrk.png)
-
+ 3. Slice STL file         |  4. 3D print
+:-------------------------:|:-------------------------:
+![](https://i.imgur.com/AKSRHbK.jpg)  |  ![](https://i.imgur.com/WQn9nwY.png)
 
 ### 2. Using the dem2stl cli
 The `dem2stl` cli lets you create a 3d-printable STL file based on your tiff file. You can run a demo computation to get
