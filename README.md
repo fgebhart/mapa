@@ -30,10 +30,11 @@ mapa
 A [jupyter notebook](https://jupyter.org/) will be started with an interactive map. Follow the described steps by
 executing the cells to create a 3d model of whatever place you like.
 
- 1. Choose bounding box    |  2. Create STL file
+ Choose bounding box    | Create STL file
 :-------------------------:|:-------------------------:
 ![](https://i.imgur.com/76hcx9N.jpg)  |  ![](https://i.imgur.com/llvxlrk.png)
- 3. Slice STL file         |  4. 3D print
+
+ Slice STL file         | 3D print
 :-------------------------:|:-------------------------:
 ![](https://i.imgur.com/AKSRHbK.jpg)  |  ![](https://i.imgur.com/WQn9nwY.png)
 
