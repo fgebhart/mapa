@@ -24,7 +24,7 @@ from mapa import conf, convert_tif_to_stl
     help=(
         "Whether maximum resolution should be used. Note, that this flag potentially increases compute time "
         "dramatically. The default behavior (i.e. max_res=False) should return 3d models with sufficient "
-        "resolution, while the output stl file should be <= 200 MB."
+        "resolution, while the output stl file should be < ~300 MB."
     ),
 )
 @click.option(
