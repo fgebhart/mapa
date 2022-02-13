@@ -121,8 +121,8 @@ def convert_tif_to_stl(
     )
 
 
-def _fetch_merge_and_clip_tiffs(bbox_geojson: dict, bbox_hash: str) -> Path:
-    tiffs = fetch_stac_items_for_bbox(bbox_geojson)
+def _fetch_merge_and_clip_tiffs(bbox_geojson: dict, bbox_hash: str, allow_caching: bool) -> Path:
+    tiffs = fetch_stac_items_for_bbox(bbox_geojson, allow_caching)
     if len(tiffs) > 1:
         merged_tiff = merge_tiffs(tiffs, bbox_hash)
     else:
@@ -130,13 +130,13 @@ def _fetch_merge_and_clip_tiffs(bbox_geojson: dict, bbox_hash: str) -> Path:
     return clip_tiff_to_bbox(merged_tiff, bbox_geojson, bbox_hash)
 
 
-def _get_tiff_for_bbox(bbox_geojson: dict) -> Path:
+def _get_tiff_for_bbox(bbox_geojson: dict, allow_caching: bool) -> Path:
     bbox_hash = get_hash_of_geojson(bbox_geojson)
-    if tiff_for_bbox_is_cached(bbox_hash):
+    if tiff_for_bbox_is_cached(bbox_hash) and allow_caching:
         click.echo("🚀  using cached tiff...                           ✅ (0.0s)")
         return _path_to_clipped_tiff(bbox_hash)
     else:
-        return _fetch_merge_and_clip_tiffs(bbox_geojson, bbox_hash)
+        return _fetch_merge_and_clip_tiffs(bbox_geojson, bbox_hash, allow_caching)
 
 
 def create_stl_for_bbox(
@@ -148,6 +148,7 @@ def create_stl_for_bbox(
     z_offset: float = 0.0,
     z_scale: float = 1.0,
     make_square: bool = False,
+    allow_caching: bool = True,
 ) -> Path:
     if bbox_geometry is None:
         print("ERROR: make sure to draw a rectangle on the map first!")
@@ -155,7 +156,7 @@ def create_stl_for_bbox(
 
     click.echo("⏳  converting bounding box to STL file... \n")
 
-    tiff = _get_tiff_for_bbox(bbox_geometry)
+    tiff = _get_tiff_for_bbox(bbox_geometry, allow_caching)
     output_file = convert_tif_to_stl(
         input_file=tiff,
         as_ascii=as_ascii,
