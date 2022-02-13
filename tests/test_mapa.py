@@ -1,20 +1,18 @@
 import math
 
-from mapa import create_stl_for_bbox
+from mapa import convert_bbox_to_stl
 from mapa.geometry import get_dimensions_of_stl_file
 
 
-def test_create_stl_for_bbox__success(tmpdir, geojson_bbox) -> None:
-    output_file = tmpdir / "output.stl"
-    output_file = create_stl_for_bbox(
+def test_create_stl_for_bbox__success(output_file, geojson_bbox) -> None:
+    output_file = convert_bbox_to_stl(
         bbox_geometry=geojson_bbox,
         output_file=output_file,
     )
     assert output_file.is_file()
 
 
-def test_create_stl_for_bbox__z_scale_from_geotiff(tmpdir):
-    output_file = tmpdir / "test.stl"
+def test_create_stl_for_bbox__z_scale_from_geotiff(output_file):
     geojson_bbox = {
         "type": "Polygon",
         "coordinates": [
@@ -27,7 +25,7 @@ def test_create_stl_for_bbox__z_scale_from_geotiff(tmpdir):
             ]
         ],
     }
-    create_stl_for_bbox(
+    convert_bbox_to_stl(
         bbox_geometry=geojson_bbox,
         as_ascii=False,
         model_size=200,
@@ -44,7 +42,7 @@ def test_create_stl_for_bbox__z_scale_from_geotiff(tmpdir):
 
     # again get dimensions of a model with 10 instead of 5mm z-offset
     z_5 = z
-    create_stl_for_bbox(
+    convert_bbox_to_stl(
         bbox_geometry=geojson_bbox,
         as_ascii=False,
         model_size=200,

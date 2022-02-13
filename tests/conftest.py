@@ -25,6 +25,11 @@ def clipped_tiff():
 
 
 @pytest.fixture
+def output_file(tmpdir):
+    yield tmpdir / "test.stl"
+
+
+@pytest.fixture
 def corrupted_tiff(tmp_path):
     p = tmp_path / "hello.tiff"
     p.write_text("foo")
