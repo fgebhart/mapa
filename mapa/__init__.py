@@ -139,7 +139,7 @@ def _get_tiff_for_bbox(bbox_geojson: dict, allow_caching: bool) -> Path:
         return _fetch_merge_and_clip_tiffs(bbox_geojson, bbox_hash, allow_caching)
 
 
-def create_stl_for_bbox(
+def convert_bbox_to_stl(
     bbox_geometry: dict,
     as_ascii: bool = False,
     model_size: int = 200,
@@ -151,7 +151,7 @@ def create_stl_for_bbox(
     allow_caching: bool = True,
 ) -> Path:
     if bbox_geometry is None:
-        print("ERROR: make sure to draw a rectangle on the map first!")
+        click.echo("⛔️  ERROR: make sure to draw a rectangle on the map first!")
         return
 
     click.echo("⏳  converting bounding box to STL file... \n")

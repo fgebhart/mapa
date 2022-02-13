@@ -26,6 +26,7 @@ def clip_tiff_to_bbox(input_tiff: Path, bbox_geometry: dict, bbox_hash: str) -> 
             "height": out_img.shape[1],
             "width": out_img.shape[2],
             "transform": out_transform,
+            "crs": data.crs,
         }
     )
     clipped_tiff = _path_to_clipped_tiff(bbox_hash)
@@ -94,7 +95,8 @@ def determine_elevation_scale(tiff: DatasetReader, model_size: int) -> float:
 def merge_tiffs(tiffs: List[Path], bbox_hash: str) -> Path:
     datasets = []
     for tiff in tiffs:
-        datasets.append(rio.open(tiff))
+        data = rio.open(tiff)
+        datasets.append(data)
     mosaic, out_trans = merge(datasets)
     out_meta = datasets[0].meta.copy()
     out_meta.update(
@@ -103,7 +105,7 @@ def merge_tiffs(tiffs: List[Path], bbox_hash: str) -> Path:
             "height": mosaic.shape[1],
             "width": mosaic.shape[2],
             "transform": out_trans,
-            "crs": "+proj=utm +zone=35 +ellps=GRS80 +units=m +no_defs ",
+            "crs": data.crs,
         }
     )
     tiff = _path_to_merged_tiff(bbox_hash)
