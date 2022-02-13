@@ -18,5 +18,5 @@ def test_fetch_stac_items_for_bbox():
             ]
         ],
     }
-    tiffs = fetch_stac_items_for_bbox(geojson=multiple_stac_items_bbox)
+    tiffs = fetch_stac_items_for_bbox(geojson=multiple_stac_items_bbox, allow_caching=True)
     assert len(tiffs) == 2

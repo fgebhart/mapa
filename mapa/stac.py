@@ -23,9 +23,9 @@ def _turn_geojson_into_bbox(geojson_bbox: dict) -> List[float]:
     return _bbox(list(geojson.utils.coords(poly)))
 
 
-def _get_tiff_file(stac_item: Item) -> Path:
+def _get_tiff_file(stac_item: Item, allow_caching: bool) -> Path:
     tiff = TMPDIR() / f"{stac_item.id}.tiff"
-    if tiff.is_file():
+    if tiff.is_file() and allow_caching:
         click.echo(f"🚀  using cached stac item {stac_item.id}  ✅ (0.0s)")
         return tiff
     else:
@@ -33,7 +33,7 @@ def _get_tiff_file(stac_item: Item) -> Path:
         return download_file(stac_item.assets["data"].href, tiff)
 
 
-def fetch_stac_items_for_bbox(geojson: dict) -> List[Path]:
+def fetch_stac_items_for_bbox(geojson: dict, allow_caching: bool) -> List[Path]:
     bbox = _turn_geojson_into_bbox(geojson)
     client = Client.open(conf.PLANETARY_COMPUTER_API_URL, ignore_conformance=True)
     search = client.search(collections=[conf.PLANETARY_COMPUTER_COLLECTION], bbox=bbox)
@@ -42,7 +42,7 @@ def fetch_stac_items_for_bbox(geojson: dict) -> List[Path]:
         click.echo(f"⬇️  fetching {len(items)} stac items...")
         files = []
         for item in items:
-            files.append(_get_tiff_file(item))
+            files.append(_get_tiff_file(item, allow_caching))
         return files
     else:
         raise ValueError("Could not find the desired STAC item for the given bounding box.")
