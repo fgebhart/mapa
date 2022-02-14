@@ -52,6 +52,7 @@ def test_compute_triangles_of_3d_surface() -> None:
         x_scale=x_scale,
         y_scale=y_scale,
         z_scale=z_scale,
+        z_offset=0.0,
     )
     expected = np.array(
         [
