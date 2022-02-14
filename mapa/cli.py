@@ -70,6 +70,7 @@ def dem2stl(
     if demo:
         input = conf.DEMO_TIF_PATH
         max_res = True
+        z_scale = 2.5
 
     convert_tif_to_stl(input, as_ascii, model_size, output, max_res, z_offset, z_scale, make_square)
 
