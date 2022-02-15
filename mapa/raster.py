@@ -97,7 +97,7 @@ def cut_array_to_format(array: npt.ArrayLike, cut_to_format_ratio: float) -> np.
     else:
         if cut_to_format_ratio > 1.0:
             # ensure ratio is between 0.0 and 1.0 and transpose ratio
-            cut_to_format_ratio = cut_to_format_ratio ** -1
+            cut_to_format_ratio = cut_to_format_ratio**-1
         return _cut_array_to_rectangular_shape(array, cut_to_format_ratio)
 
 

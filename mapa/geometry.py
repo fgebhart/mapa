@@ -233,7 +233,7 @@ def compute_all_triangles(
     if cut_to_format_ratio:
         if cut_to_format_ratio > 1.0:
             # ensure ratio is between 0.0 and 1.0 and transpose ratio
-            cut_to_format_ratio = cut_to_format_ratio ** -1
+            cut_to_format_ratio = cut_to_format_ratio**-1
         y_scale = target_size * cut_to_format_ratio / max_y
     else:
         y_scale = target_size / max_x
