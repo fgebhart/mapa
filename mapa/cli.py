@@ -4,7 +4,7 @@ from typing import Union
 
 import click
 
-from mapa import conf, convert_tif_to_stl
+from mapa import conf, convert_tiff_to_stl
 
 
 @click.command(help="🌍 Convert DEM data into STL files 🌏")
@@ -68,11 +68,11 @@ def dem2stl(
         click.echo("💥  Only one of --input or --demo is allowed, try --help.")
         exit(1)
     if demo:
-        input = conf.DEMO_TIF_PATH
+        input = conf.DEMO_TIFF_PATH
         max_res = True
         z_scale = 2.5
 
-    convert_tif_to_stl(input, as_ascii, model_size, output, max_res, z_offset, z_scale, make_square)
+    convert_tiff_to_stl(input, as_ascii, model_size, output, max_res, z_offset, z_scale, make_square)
 
 
 @click.command(help="🗺 Draw a bounding box on a map and turn it into a STL file 🗺")

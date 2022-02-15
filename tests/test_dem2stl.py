@@ -1,6 +1,6 @@
 import math
 
-from mapa import convert_tif_to_stl
+from mapa import convert_tiff_to_stl
 from mapa.geometry import get_dimensions_of_stl_file
 
 
@@ -9,7 +9,7 @@ def test_verify_model_size(clipped_tiff, tmpdir) -> None:
     output_file = tmpdir / "output.stl"
 
     model_size = 100
-    convert_tif_to_stl(
+    convert_tiff_to_stl(
         input_file=clipped_tiff,
         as_ascii=False,
         model_size=model_size,
@@ -28,7 +28,7 @@ def test_verify_model_size(clipped_tiff, tmpdir) -> None:
     assert y != z
 
     # now enforce squaring
-    convert_tif_to_stl(
+    convert_tiff_to_stl(
         input_file=clipped_tiff,
         as_ascii=False,
         model_size=model_size,
@@ -48,7 +48,7 @@ def test_verify_model_size(clipped_tiff, tmpdir) -> None:
 
     # doubling the model size should also double the dimensions
     model_size = 200
-    convert_tif_to_stl(
+    convert_tiff_to_stl(
         input_file=clipped_tiff,
         as_ascii=False,
         model_size=model_size,
@@ -71,7 +71,7 @@ def test_verify_model_size(clipped_tiff, tmpdir) -> None:
     z_scale_1 = z_200
 
     # increasing z_scale should increase the models z dimension
-    convert_tif_to_stl(
+    convert_tiff_to_stl(
         input_file=clipped_tiff,
         as_ascii=False,
         model_size=model_size,
@@ -86,7 +86,7 @@ def test_verify_model_size(clipped_tiff, tmpdir) -> None:
     assert math.isclose(z_scale_2, 2 * z_scale_1, rel_tol=0.01)
 
     # changing the coarseness parameter should not affect the output model dimensions
-    convert_tif_to_stl(
+    convert_tiff_to_stl(
         input_file=clipped_tiff,
         as_ascii=False,
         model_size=model_size,
@@ -97,7 +97,7 @@ def test_verify_model_size(clipped_tiff, tmpdir) -> None:
         make_square=True,
     )
     x_coarse_1, y_coarse_1, z_coarse_1 = get_dimensions_of_stl_file(output_file)
-    convert_tif_to_stl(
+    convert_tiff_to_stl(
         input_file=clipped_tiff,
         as_ascii=False,
         model_size=model_size,

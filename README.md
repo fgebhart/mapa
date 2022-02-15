@@ -70,7 +70,7 @@ Options:
                         model. Defaults to 4.0. Is not influenced by z-scale.
   --z-scale FLOAT       Value to be multiplied to the z-axis elevation data to
                         scale up the height of the model. Defaults to 1.0.
-  --demo                Converts a demo tif of Hawaii into a STL file.
+  --demo                Converts a demo tiff of Hawaii into a STL file.
   --make-square         If the input tiff is a rectangle and not a square, cut
                         the longer side to make the output STL file a square.
   --version             Show the version and exit.
@@ -80,9 +80,9 @@ Options:
 ### 3. Using `mapa` as python library
 In case you are building your own application you can simply use `mapa`'s functionality as a within your application by importing the modules functions.
 ```python
-from mapa import convert_tif_to_stl
+from mapa import convert_tiff_to_stl
 
-path_to_stl = convert_tif_to_stl(...)
+path_to_stl = convert_tiff_to_stl(...)
 ```
 
 ## Changelog

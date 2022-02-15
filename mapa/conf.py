@@ -10,7 +10,7 @@ DEFAULT_Z_OFFSET = 4.0
 DEFAULT_Z_SCALE = 1.0
 
 # path to demo tiff
-DEMO_TIF_PATH = Path(__file__).parent.parent / "tests" / "tif" / "hawaii.tif"
+DEMO_TIFF_PATH = Path(__file__).parent.parent / "tests" / "tiff" / "hawaii.tiff"
 
 # stac catalogue
 PLANETARY_COMPUTER_API_URL = "https://planetarycomputer.microsoft.com/api/stac/v1"

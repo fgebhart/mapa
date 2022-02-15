@@ -8,7 +8,7 @@ from mapa.cli import dem2stl
 
 if __name__ == "__main__":
     cli = CliRunner()
-    test_tiff = Path(__file__).parent / "tif" / "hawaii_low_res.tif"
+    test_tiff = Path(__file__).parent / "tiff" / "hawaii_low_res.tiff"
 
     ascii_output = Path(__file__).parent / "stl" / "hawaii_ascii.stl"
     print(f"regenerating ascii stl file: {ascii_output}")

@@ -89,7 +89,7 @@ def convert_array_to_stl(
     return Path(output_file)
 
 
-def convert_tif_to_stl(
+def convert_tiff_to_stl(
     input_file: str,
     as_ascii: bool,
     model_size: int,
@@ -157,7 +157,7 @@ def convert_bbox_to_stl(
     click.echo("⏳  converting bounding box to STL file... \n")
 
     tiff = _get_tiff_for_bbox(bbox_geometry, allow_caching)
-    output_file = convert_tif_to_stl(
+    output_file = convert_tiff_to_stl(
         input_file=tiff,
         as_ascii=as_ascii,
         model_size=model_size,
