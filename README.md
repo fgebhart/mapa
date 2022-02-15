@@ -55,26 +55,37 @@ Usage: dem2stl [OPTIONS]
   🌍 Convert DEM data into STL files 🌏
 
 Options:
-  --input TEXT          Path to input TIFF file.
-  --output TEXT         Path to output STL file.
-  --as-ascii            Save output STL as ascii file. If not provided, output
-                        file will be binary.
-  --model-size INTEGER  Desired size of the generated 3d model in millimeter.
-  --max-res             Whether maximum resolution should be used. Note, that
-                        this flag potentially increases compute time
-                        dramatically. The default behavior (i.e.
-                        max_res=False) should return 3d models with sufficient
-                        resolution, while the output stl file should be <= 200
-                        MB.
-  --z-offset FLOAT      Offset distance in millimeter to be put below the 3d
-                        model. Defaults to 4.0. Is not influenced by z-scale.
-  --z-scale FLOAT       Value to be multiplied to the z-axis elevation data to
-                        scale up the height of the model. Defaults to 1.0.
-  --demo                Converts a demo tiff of Hawaii into a STL file.
-  --make-square         If the input tiff is a rectangle and not a square, cut
-                        the longer side to make the output STL file a square.
-  --version             Show the version and exit.
-  --help                Show this message and exit.
+  --input TEXT                Path to input TIFF file.
+  --output TEXT               Path to output STL file.
+  --as-ascii                  Save output STL as ascii file. If not provided,
+                              output file will be binary.
+  --model-size INTEGER        Desired size of the generated 3d model in
+                              millimeter.
+  --max-res                   Whether maximum resolution should be used. Note,
+                              that this flag potentially increases compute
+                              time dramatically. The default behavior (i.e.
+                              max_res=False) should return 3d models with
+                              sufficient resolution, while the output stl file
+                              should be < ~400 MB.
+  --z-offset FLOAT            Offset distance in millimeter to be put below
+                              the 3d model. Defaults to 4.0. Is not influenced
+                              by z-scale.
+  --z-scale FLOAT             Value to be multiplied to the z-axis elevation
+                              data to scale up the height of the model.
+                              Defaults to 1.0.
+  --demo                      Converts a demo tif of Hawaii into a STL file.
+  --cut-to-format-ratio TEXT  Cut the input tiff file to a specified format.
+                              Set to `1` if you want the output model to be
+                              squared. Set to `0.5` if you want one side to be
+                              half the length of the other side. Omit this
+                              flag to keep the input format. This option is
+                              particularly useful when an exact output format
+                              ratio is required for example when planning to
+                              put the 3d printed model into a picture frame.
+                              Using this option will always try to cut the
+                              shorter side of the input tiff.
+  --version                   Show the version and exit.
+  --help                      Show this message and exit.
 ```
 
 ### 3. Using `mapa` as python library
@@ -82,7 +93,16 @@ In case you are building your own application you can simply use `mapa`'s functi
 ```python
 from mapa import convert_tiff_to_stl
 
-path_to_stl = convert_tiff_to_stl(...)
+path_to_stl = convert_tiff_to_stl(
+    input_file: "path/to/your/input_file.tiff",
+    as_ascii: False,
+    model_size: 200,
+    output_file: "path/to/your/output_file.stl",
+    max_res: False,
+    z_offset: 3.0,
+    z_scale: 1.5,
+    cut_to_format_ratio: None,
+)
 ```
 
 ## Changelog
