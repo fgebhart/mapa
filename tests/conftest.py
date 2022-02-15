@@ -16,12 +16,12 @@ def test_stl_ascii():
 
 @pytest.fixture
 def test_tiff():
-    yield Path(__file__).parent / "tif" / "hawaii_low_res.tif"
+    yield Path(__file__).parent / "tiff" / "hawaii_low_res.tiff"
 
 
 @pytest.fixture
 def clipped_tiff():
-    yield Path(__file__).parent / "tif" / "clipped.tif"
+    yield Path(__file__).parent / "tiff" / "clipped.tiff"
 
 
 @pytest.fixture

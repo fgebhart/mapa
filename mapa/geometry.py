@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Union
 
 import click
 import numba as nb
@@ -224,11 +224,19 @@ def compute_all_triangles(
     target_size: int,
     z_offset: float,
     z_scale: float,
+    cut_to_format_ratio: Union[float, None],
 ) -> np.ndarray:
 
     # determine scales
     max_x, max_y = array.shape
-    xy_scale = target_size / max_x
+    x_scale = target_size / max_x
+    if cut_to_format_ratio:
+        if cut_to_format_ratio > 1.0:
+            # ensure ratio is between 0.0 and 1.0 and transpose ratio
+            cut_to_format_ratio = cut_to_format_ratio**-1
+        y_scale = target_size * cut_to_format_ratio / max_y
+    else:
+        y_scale = target_size / max_x
 
     # create raster
     click.echo(f"{'🗺  creating base raster for tiff...':<50s}", nl=False)
@@ -252,8 +260,8 @@ def compute_all_triangles(
         array=array,
         max_x=max_x,
         max_y=max_y,
-        x_scale=xy_scale,
-        y_scale=xy_scale,
+        x_scale=x_scale,
+        y_scale=y_scale,
         z_scale=z_scale,
         z_offset=z_offset,
     )
@@ -262,12 +270,12 @@ def compute_all_triangles(
         raster=raster,
         max_x=max_x,
         max_y=max_y,
-        x_scale=xy_scale,
-        y_scale=xy_scale,
+        x_scale=x_scale,
+        y_scale=y_scale,
         z_scale=z_scale,
         z_offset=z_offset,
     )
-    bottom_triangles = _compute_triangles_of_bottom(max_x=max_x, max_y=max_y, x_scale=xy_scale, y_scale=xy_scale)
+    bottom_triangles = _compute_triangles_of_bottom(max_x=max_x, max_y=max_y, x_scale=x_scale, y_scale=y_scale)
     return np.vstack((dem_triangles, side_triangles, bottom_triangles))
 
 

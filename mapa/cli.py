@@ -4,7 +4,7 @@ from typing import Union
 
 import click
 
-from mapa import conf, convert_tif_to_stl
+from mapa import conf, convert_tiff_to_stl
 
 
 @click.command(help="🌍 Convert DEM data into STL files 🌏")
@@ -45,9 +45,15 @@ from mapa import conf, convert_tif_to_stl
 )
 @click.option("--demo", is_flag=True, help="Converts a demo tif of Hawaii into a STL file.")
 @click.option(
-    "--make-square",
-    is_flag=True,
-    help="If the input tiff is a rectangle and not a square, cut the longer side to make the output STL file a square.",
+    "--cut-to-format-ratio",
+    default=None,
+    help=(
+        "Cut the input tiff file to a specified format. Set to `1` if you want the output model to be squared. Set to "
+        "`0.5` if you want one side to be half the length of the other side. Omit this flag to keep the input format. "
+        "This option is particularly useful when an exact output format ratio is required for example when planning to "
+        "put the 3d printed model into a picture frame. Using this option will always try to cut the shorter side of "
+        "the input tiff."
+    ),
 )
 @click.version_option()
 def dem2stl(
@@ -59,7 +65,7 @@ def dem2stl(
     demo: bool = False,
     as_ascii: bool = False,
     model_size: int = conf.DEFAULT_MODEL_OUTPUT_SIZE_IN_MM,
-    make_square: bool = False,
+    cut_to_format_ratio: Union[None, float] = None,
 ) -> None:
     if demo is False and input is None:
         click.echo("💥  Either of --input or --demo is required, try --help.")
@@ -68,11 +74,11 @@ def dem2stl(
         click.echo("💥  Only one of --input or --demo is allowed, try --help.")
         exit(1)
     if demo:
-        input = conf.DEMO_TIF_PATH
+        input = conf.DEMO_TIFF_PATH
         max_res = True
         z_scale = 2.5
 
-    convert_tif_to_stl(input, as_ascii, model_size, output, max_res, z_offset, z_scale, make_square)
+    convert_tiff_to_stl(input, as_ascii, model_size, output, max_res, z_offset, z_scale, cut_to_format_ratio)
 
 
 @click.command(help="🗺 Draw a bounding box on a map and turn it into a STL file 🗺")
