@@ -16,7 +16,7 @@ from mapa import conf, convert_tiff_to_stl
 @click.option(
     "--model-size",
     default=conf.DEFAULT_MODEL_OUTPUT_SIZE_IN_MM,
-    help="Desired size of the generated 3d model in millimeter.",
+    help="Desired size of the (larger side of the) generated 3d model in millimeter.",
 )
 @click.option(
     "--max-res",
