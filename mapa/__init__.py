@@ -151,6 +151,46 @@ def convert_bbox_to_stl(
     cut_to_format_ratio: Union[None, float] = None,
     allow_caching: bool = True,
 ) -> Path:
+    """
+    Takes a GeoJSON containing a bounding box as input, fetches the required STAC GeoTIFFs for the
+    given bounding box and creates a STL file with elevation data from the GeoTIFFs.
+
+    Parameters
+    ----------
+    bbox_geometry : dict
+        GeoJSON containing the coordinates of the bounding box, selected on the ipyleaflet widget.
+        Usually the value of `drawer.last_draw["geometry"]` is used for this.
+    as_ascii : bool, optional
+        Save output STL as ascii file. If False, output file will be binary. By default False
+    model_size : int, optional
+        Desired size of the (larger side of the) generated 3d model in millimeter. By default 200
+    output_file : str, optional
+        Path to output STL file. By default "output.stl"
+    max_res : bool, optional
+        Whether maximum resolution should be used. Note, that this flag potentially increases compute time
+        and memory consumption dramatically. The default behavior (i.e. max_res=False) should return 3d models
+        with sufficient resolution, while the output stl file should be < ~300 MB. By default False
+    z_offset : float, optional
+        Offset distance in millimeter to be put below the 3d model. Is not influenced by z-scale.
+        By default 0.0
+    z_scale : float, optional
+        Value to be multiplied to the z-axis elevation data to scale up the height of the model.
+        By default 1.0
+    cut_to_format_ratio : Union[None, float], optional
+        Cut the input tiff file to a specified format. Set to `1` if you want the output model to be squared.
+        Set to `0.5` if you want one side to be half the length of the other side. Omit this flag to keep the
+        input format. This option is particularly useful when an exact output format ratio is required for
+        example when planning to put the 3d printed model into a picture frame. Using this option will always
+        try to cut the shorter side of the input tiff. By default None
+    allow_caching : bool, optional
+        Whether caching previous downloaded GeoTIFF files should be enabled/disabled. By default True
+
+    Returns
+    -------
+    Path
+        Path to the resulting STL file on your local machine.
+    """
+
     if bbox_geometry is None:
         click.echo("⛔️  ERROR: make sure to draw a rectangle on the map first!")
         return
