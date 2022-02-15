@@ -21,6 +21,7 @@ def test_dem2stl__no_input_file_no_demo() -> None:
     result = cli.invoke(dem2stl)
     assert result.exit_code == 1, result.stdout
     assert "💥  Either of --input or --demo is required, try --help." in result.stdout
+    assert "Aborted!" in result.stdout
 
 
 def test_dem2stl__not_a_tiff_file(corrupted_tiff, tmpdir) -> None:

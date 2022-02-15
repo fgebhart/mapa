@@ -24,7 +24,7 @@ from mapa import conf, convert_tiff_to_stl
     help=(
         "Whether maximum resolution should be used. Note, that this flag potentially increases compute time "
         "dramatically. The default behavior (i.e. max_res=False) should return 3d models with sufficient "
-        "resolution, while the output stl file should be < ~300 MB."
+        "resolution, while the output stl file should be < ~400 MB."
     ),
 )
 @click.option(
@@ -69,10 +69,10 @@ def dem2stl(
 ) -> None:
     if demo is False and input is None:
         click.echo("💥  Either of --input or --demo is required, try --help.")
-        exit(1)
+        raise click.Abort()
     if demo and input:
         click.echo("💥  Only one of --input or --demo is allowed, try --help.")
-        exit(1)
+        raise click.Abort()
     if demo:
         input = conf.DEMO_TIFF_PATH
         max_res = True
