@@ -11,7 +11,7 @@ from mapa.caching import get_hash_of_geojson, tiff_for_bbox_is_cached
 from mapa.geometry import compute_all_triangles, reduce_resolution
 from mapa.raster import (
     clip_tiff_to_bbox,
-    cut_array_to_square,
+    cut_array_to_format,
     determine_elevation_scale,
     merge_tiffs,
     remove_empty_first_and_last_rows_and_cols,
@@ -59,15 +59,15 @@ def convert_array_to_stl(
     max_res: bool,
     z_offset: float,
     z_scale: float,
-    make_square: bool,
+    cut_to_format_ratio: Union[None, float],
     elevation_scale: float,
     output_file: Path,
 ) -> Path:
     # drop higher dimension to get 2-dimensional (x * y) array
     array = array[0, :, :]
     array = remove_empty_first_and_last_rows_and_cols(array)
-    if make_square:
-        array = cut_array_to_square(array)
+    if cut_to_format_ratio:
+        array = cut_array_to_format(array, cut_to_format_ratio)
 
     x, y = array.shape
     if max_res:
@@ -82,8 +82,10 @@ def convert_array_to_stl(
             click.echo(f"{'🔍  reducing image resolution...':<50s}", nl=False)
             array = reduce_resolution(array, bin_factor=bin_fac)
     combined_z_scale = z_scale * elevation_scale
-    triangles = compute_all_triangles(array, model_size, z_offset, combined_z_scale)
+
+    triangles = compute_all_triangles(array, model_size, z_offset, combined_z_scale, cut_to_format_ratio)
     click.echo(f"{'💾  saving data to stl file...':<50s}", nl=False)
+
     output_file = _save_to_stl_file(triangles, output_file, as_ascii)
     click.echo(f"\n🎉  successfully generated STL file: {Path(output_file).absolute()}")
     return Path(output_file)
@@ -97,7 +99,7 @@ def convert_tiff_to_stl(
     max_res: bool,
     z_offset: float,
     z_scale: float,
-    make_square: bool,
+    cut_to_format_ratio: Union[None, float],
 ) -> Path:
     _verify_input_is_valid(input_file)
     if output_file is None:
@@ -115,7 +117,7 @@ def convert_tiff_to_stl(
         max_res=max_res,
         z_offset=z_offset,
         z_scale=z_scale,
-        make_square=make_square,
+        cut_to_format_ratio=cut_to_format_ratio,
         elevation_scale=elevation_scale,
         output_file=output_file,
     )
@@ -147,7 +149,7 @@ def convert_bbox_to_stl(
     max_res: bool = False,
     z_offset: float = 0.0,
     z_scale: float = 1.0,
-    make_square: bool = False,
+    cut_to_format_ratio: Union[None, float] = None,
     allow_caching: bool = True,
 ) -> Path:
     if bbox_geometry is None:
@@ -165,6 +167,6 @@ def convert_bbox_to_stl(
         max_res=max_res,
         z_offset=z_offset,
         z_scale=z_scale,
-        make_square=make_square,
+        cut_to_format_ratio=cut_to_format_ratio,
     )
     return output_file
