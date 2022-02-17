@@ -4,7 +4,6 @@ from typing import Union
 import click
 import numpy as np
 import rasterio as rio
-from stl import Mode, mesh
 
 from mapa import conf
 from mapa.caching import get_hash_of_geojson, tiff_for_bbox_is_cached
@@ -17,7 +16,8 @@ from mapa.raster import (
     remove_empty_first_and_last_rows_and_cols,
 )
 from mapa.stac import fetch_stac_items_for_bbox
-from mapa.utils import _path_to_clipped_tiff, timing
+from mapa.stl import save_to_stl_file
+from mapa.utils import _path_to_clipped_tiff
 
 
 def _verify_input_is_valid(input: str):
@@ -38,17 +38,6 @@ def _verify_output_is_valid(output: str):
         raise FileNotFoundError(
             f"parent directory of output file '{output_path.parent}' does not seem to be a valid directory."
         )
-
-
-@timing
-def _save_to_stl_file(triangles: np.ndarray, output_file: str, as_ascii: bool) -> str:
-    stl = mesh.Mesh(np.zeros(triangles.shape[0], dtype=mesh.Mesh.dtype))
-    stl.vectors = triangles
-    if as_ascii:
-        stl.save(output_file, mode=Mode.ASCII)
-    else:
-        stl.save(output_file, mode=Mode.BINARY)
-    return output_file
 
 
 def convert_array_to_stl(
@@ -85,7 +74,7 @@ def convert_array_to_stl(
     triangles = compute_all_triangles(array, model_size, z_offset, combined_z_scale, cut_to_format_ratio)
     click.echo(f"{'💾  saving data to stl file...':<50s}", nl=False)
 
-    output_file = _save_to_stl_file(triangles, output_file, as_ascii)
+    output_file = save_to_stl_file(triangles, output_file, as_ascii)
     click.echo(f"\n🎉  successfully generated STL file: {Path(output_file).absolute()}")
     return Path(output_file)
 
