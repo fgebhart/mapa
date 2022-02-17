@@ -1,7 +1,7 @@
 import math
 
 from mapa import convert_bbox_to_stl
-from mapa.geometry import get_dimensions_of_stl_file
+from mapa.stl import get_dimensions_of_stl_file
 
 
 def test_create_stl_for_bbox__success(output_file, geojson_bbox) -> None:

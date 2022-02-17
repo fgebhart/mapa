@@ -114,16 +114,13 @@ STL file.
 """
 
 
-from pathlib import Path
-from typing import Tuple, Union
+from typing import Union
 
 import click
 import numba as nb
 import numpy as np
 import numpy.typing as npt
-import stl
 from numpy.lib.stride_tricks import as_strided
-from stl import mesh
 
 from mapa.utils import timing
 
@@ -393,34 +390,6 @@ def compute_all_triangles(
     )
     bottom_triangles = _compute_triangles_of_bottom(max_x=max_x, max_y=max_y, x_scale=x_scale, y_scale=y_scale)
     return np.vstack((dem_triangles, side_triangles, bottom_triangles))
-
-
-def _find_dimensions_of_mesh(mesh_obj) -> Tuple[float]:
-    minx = maxx = miny = maxy = minz = maxz = None
-    for p in mesh_obj.points:
-        if minx is None:
-            minx = p[stl.Dimension.X]
-            maxx = p[stl.Dimension.X]
-            miny = p[stl.Dimension.Y]
-            maxy = p[stl.Dimension.Y]
-            minz = p[stl.Dimension.Z]
-            maxz = p[stl.Dimension.Z]
-        else:
-            maxx = max(p[stl.Dimension.X], maxx)
-            minx = min(p[stl.Dimension.X], minx)
-            maxy = max(p[stl.Dimension.Y], maxy)
-            miny = min(p[stl.Dimension.Y], miny)
-            maxz = max(p[stl.Dimension.Z], maxz)
-            minz = min(p[stl.Dimension.Z], minz)
-    x = maxx - minx
-    y = maxy - miny
-    z = maxz - minz
-    return x, y, z
-
-
-def get_dimensions_of_stl_file(stl_path: Path) -> Tuple[float]:
-    main_body = mesh.Mesh.from_file(stl_path)
-    return _find_dimensions_of_mesh(main_body)
 
 
 @timing

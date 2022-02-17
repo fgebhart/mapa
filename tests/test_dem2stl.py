@@ -1,7 +1,7 @@
 import math
 
 from mapa import convert_tiff_to_stl
-from mapa.geometry import get_dimensions_of_stl_file
+from mapa.stl import get_dimensions_of_stl_file
 
 
 def test_verify_model_size(clipped_tiff, tmpdir) -> None:
