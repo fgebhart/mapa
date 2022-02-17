@@ -1,3 +1,119 @@
+"""
+Explanation of the Algorithm
+============================
+
+First of all it is crucial to understand how a STL file is constructed. For this purpose I would recommend reading the
+following articles, since this explanation aims on outlining the implementation of the below algorithm only:
+* http://www.fabbers.com/tech/STL_Format
+* https://danbscott.ghost.io/writing-an-stl-file-from-scratch/
+
+With that in mind, we basically only need to accomplish the transformation of pixels into facets (triangles). This is
+achieved by the following steps:
+
+
+0. Reading the GeoTiff and turning it into a 2d array where each pixel value equals the altitude
+------------------------------------------------------------------------------------------------
+
+Reading the GeoTiff and turning it into a numpy array is not considered part of the below algorithm. It is taken care of
+by `mapa/__init__.py` and not described in greater detail here.
+
+
+1. Creating a 2d array (raster) given the input GeoTIFF data
+------------------------------------------------------------
+
+A 2d numpy array is created within `_create_raster`. It has one more row and one more column compared to the input
+array of the GeoTIFF. That is because we are going to describe each input pixel by four triangles.
+
+A pixel with center C and corners 1,2,3 and 4 represented by four triangles:
+
+1-----------------2
+| x             x |
+|   x         x   |
+|     x     x     |
+|      x   x      |
+|        C        |
+|      x   x      |
+|     x     x     |
+|   x         x   |
+| x             x |
+3-----------------4
+
+
+
+All four triangles are connected to each other in the center C of the pixel. Imaging we are moving the raster slightly
+across/above the input array.
+
+r   r   r   r   r   r
+  a   a   a   a   a
+r   r   r   r   r   r
+  a   a   a   a   a
+r   r   r   r   r   r
+  a   a   a   a   a
+r   r   r   r   r   r
+  a   a   a   a   a
+r   r   r   r   r   r
+  a   a   a   a   a
+r   r   r   r   r   r
+
+The values of the raster r can then be used to describe the altitude at the corners (1,2,3 and 4) of a pixel, while the
+values of the array a describe the altitude at the center C of the pixel. With this approach the information for
+computing the position of the required triangles representing the 3d surface of the desired output model can easily be
+determined by looking into the input array and the constructed raster.
+
+
+2. Computing the triangles representing the elevation data
+----------------------------------------------------------
+
+With the above step in mind, determining the altitude values basically consists of a lookup into the given raster and
+input array. The function `_compute_triangles_of_3d_surface` takes care of this while at the same time adding offset
+values and scaling the x, y and z-axis to achieve the desired model size. The return value of the function is a numpy
+array containing the computed triangles. Each triangle T consists of 3 vertices V where each vertex V corresponds to one
+coordinates C, where each coordinate C in turn consists of a X, Y and Z value:
+
+T = V1, V2, V3
+V = C
+C = X, Y, Z
+
+This means each triangle consists of nine values. The `_compute_triangles_of_3d_surface` therefore needs to iterate over
+all pixels and compute the positions of the four triangles for each pixel. The triangles per pixel are described as top,
+left, bottom and right triangles.
+
+
+3. Computing the triangles representing the side and bottom of the output 3d model
+----------------------------------------------------------------------------------
+
+With the above steps we manage to compute the triangles for describing the 3d surface which we derived from the input
+GeoTIFF file. However, in order to make a 3d-printable STL file, we need to ensure that the resulting mesh is actually
+closed i.e. watertight. This is done by `_compute_triangles_of_body_side` and `_compute_triangles_of_bottom`. The
+vertices of the triangles for the side of the resulting STL model are computed in the following fashion. Imaging moving
+along one side (x or y) of the computed 3d surface. Each coordinate along this side will be the considered the vertex of
+two triangles, while the next coordinate along the side of the surface is the second vertex and one coordinate at the
+bottom of the model will be the third vertex of the triangle. Or one vertex at the surface and two at the bottom.
+
+        s
+s   s       s       s           s       s   s
+                s       s   s       s           s
+
+b   b   b   b   b   b   b   b   b   b   b   b   b
+
+s illustrates a coordinate at the side of the 3d surface and b a coordinate at the bottom of the model. Imaging drawing
+triangles between the s's and the b's. This approach is used to compute the side triangles within
+`_compute_triangles_of_body_side`.
+
+Computing the triangles of the bottom in the scope of `_compute_triangles_of_bottom` is super straight forward, as it
+only needs to compute two triangles, where the altitude value z is zero and all other x and y values correspond the
+desired model dimensions.
+
+
+4. Write triangles to STL file
+------------------------------
+
+This is not considered part of the algorithm and is taken care of by `mapa/__init__._save_to_stl_file`. It boils down to
+the usage of numpy-stl, which has a super convenient and efficient interface for writing triangles to a (binary of ascii)
+STL file.
+"""
+
+
 from pathlib import Path
 from typing import Tuple, Union
 
