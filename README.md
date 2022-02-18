@@ -42,7 +42,7 @@ executing the cells to create a 3d model of whatever place you like.
 The `dem2stl` cli lets you create a 3d-printable STL file based on your tiff file. You can run a demo computation to get
 a feeling of how the output STL will look like:
 ```
-dem2stl demo
+dem2stl --demo
 ```
 If you have your tiff file ready, you may run something like
 ```
@@ -73,7 +73,7 @@ Options:
   --z-scale FLOAT             Value to be multiplied to the z-axis elevation
                               data to scale up the height of the model.
                               Defaults to 1.0.
-  --demo                      Converts a demo tif of Hawaii into a STL file.
+  --demo                      Converts a demo tiff of Hawaii into a STL file.
   --cut-to-format-ratio TEXT  Cut the input tiff file to a specified format.
                               Set to `1` if you want the output model to be
                               squared. Set to `0.5` if you want one side to be
@@ -89,7 +89,7 @@ Options:
 ```
 
 ### 3. Using `mapa` as python library
-In case you are building your own application you can simply use `mapa`'s functionality as a within your application by importing the modules functions.
+In case you are building your own application you can simply use `mapa`'s functionality within your application by importing the functions of the module.
 ```python
 from mapa import convert_tiff_to_stl
 
