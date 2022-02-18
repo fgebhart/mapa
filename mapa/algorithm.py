@@ -332,7 +332,7 @@ def _compute_triangles_of_bottom(max_x: int, max_y: int, x_scale: float, y_scale
     return triangles
 
 
-def _determine_scales(target_size: int, max_x: int, max_y: int, cut_to_format_ratio: float) -> Tuple[float, float]:
+def _determine_x_y_scales(target_size: int, max_x: int, max_y: int, cut_to_format_ratio: float) -> Tuple[float, float]:
     x_scale = target_size / max_x
     if cut_to_format_ratio:
         if cut_to_format_ratio > 1.0:
@@ -344,17 +344,15 @@ def _determine_scales(target_size: int, max_x: int, max_y: int, cut_to_format_ra
     return x_scale, y_scale
 
 
-def _determine_z_offset(z_offset: float, minimum: float) -> float:
+def _determine_z_offset(z_offset: float, minimum: float, elevation_scale: float) -> float:
     if z_offset is None:
         # using the natural height, i.e. islands will have an z_offset of ~0 and mountains will have a larger z_offset
-        z_offset = minimum
-        z_offset = 0 if z_offset > 0 else z_offset
+        return minimum * elevation_scale
     else:
-        # use given input offset as height to ground
-        z_offset = z_offset
         if z_offset < 0:
             click.echo("☝️  Warning: Be careful using negative z_offsets, as it might break your 3D model.")
-    return z_offset
+        # subtract scaled minimum from z_offset to ensure the input z_offset will remain
+        return z_offset - minimum * elevation_scale
 
 
 def compute_all_triangles(
@@ -362,6 +360,7 @@ def compute_all_triangles(
     target_size: int,
     z_offset: float,
     z_scale: float,
+    elevation_scale: float,
     cut_to_format_ratio: Union[float, None],
 ) -> np.ndarray:
 
@@ -370,8 +369,9 @@ def compute_all_triangles(
     click.echo(f"{'🗺  creating base raster for tiff...':<50s}", nl=False)
     raster = _create_raster(array, max_x, max_y)
 
-    x_scale, y_scale = _determine_scales(target_size, max_x, max_y, cut_to_format_ratio)
-    z_offset = _determine_z_offset(z_offset, raster.min())
+    x_scale, y_scale = _determine_x_y_scales(target_size, max_x, max_y, cut_to_format_ratio)
+    z_offset = _determine_z_offset(z_offset, raster.min(), elevation_scale)
+    combined_z_scale = elevation_scale * z_scale
 
     # compute triangles for 3d surface, sides and bottom
     click.echo(f"{'⛰  computing triangles of 3d surface...':<50s}", nl=False)
@@ -382,7 +382,7 @@ def compute_all_triangles(
         max_y=max_y,
         x_scale=x_scale,
         y_scale=y_scale,
-        z_scale=z_scale,
+        z_scale=combined_z_scale,
         z_offset=z_offset,
     )
     click.echo(f"{'📐  computing triangles of body sides...':<50s}", nl=False)
@@ -392,7 +392,7 @@ def compute_all_triangles(
         max_y=max_y,
         x_scale=x_scale,
         y_scale=y_scale,
-        z_scale=z_scale,
+        z_scale=combined_z_scale,
         z_offset=z_offset,
     )
     bottom_triangles = _compute_triangles_of_bottom(max_x=max_x, max_y=max_y, x_scale=x_scale, y_scale=y_scale)

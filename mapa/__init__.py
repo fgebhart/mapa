@@ -69,9 +69,8 @@ def convert_array_to_stl(
         if bin_fac > 1:
             click.echo(f"{'🔍  reducing image resolution...':<50s}", nl=False)
             array = reduce_resolution(array, bin_factor=bin_fac)
-    combined_z_scale = z_scale * elevation_scale
 
-    triangles = compute_all_triangles(array, model_size, z_offset, combined_z_scale, cut_to_format_ratio)
+    triangles = compute_all_triangles(array, model_size, z_offset, z_scale, elevation_scale, cut_to_format_ratio)
     click.echo(f"{'💾  saving data to stl file...':<50s}", nl=False)
 
     output_file = save_to_stl_file(triangles, output_file, as_ascii)
@@ -160,7 +159,8 @@ def convert_bbox_to_stl(
         and memory consumption dramatically. The default behavior (i.e. max_res=False) should return 3d models
         with sufficient resolution, while the output stl file should be < ~300 MB. By default False
     z_offset : float, optional
-        Offset distance in millimeter to be put below the 3d model. Is not influenced by z-scale.
+        Offset distance in millimeter to be put below the 3d model. Is not influenced by z-scale. Set to None
+        if you want your model to have the natural offset, corresponding to height above mean sea level.
         By default 0.0
     z_scale : float, optional
         Value to be multiplied to the z-axis elevation data to scale up the height of the model.
