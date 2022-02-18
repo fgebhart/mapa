@@ -5,7 +5,7 @@ from click.testing import CliRunner
 from rasterio.errors import RasterioIOError
 
 from mapa.cli import dem2stl
-from mapa.stl import get_dimensions_of_stl_file
+from mapa.stl_file import get_dimensions_of_stl_file
 
 
 def test_dem2stl__version() -> None:

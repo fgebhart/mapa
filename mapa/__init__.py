@@ -16,7 +16,7 @@ from mapa.raster import (
     remove_empty_first_and_last_rows_and_cols,
 )
 from mapa.stac import fetch_stac_items_for_bbox
-from mapa.stl import save_to_stl_file
+from mapa.stl_file import save_to_stl_file
 from mapa.utils import _path_to_clipped_tiff
 
 
