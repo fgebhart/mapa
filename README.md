@@ -109,7 +109,7 @@ path_to_stl = convert_tiff_to_stl(
 ## Algorithm Deep Dive
 
 In case you are curios about the algorithm which turns a GeoTIFF into a STL file, I'd recommend reading the header of
-[`geometry.py`](https://github.com/fgebhart/mapa/blob/main/mapa/geometry.py).
+[`algorithm.py`](https://github.com/fgebhart/mapa/blob/main/mapa/algorithm.py).
 
 
 ## Changelog

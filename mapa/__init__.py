@@ -6,8 +6,8 @@ import numpy as np
 import rasterio as rio
 
 from mapa import conf
+from mapa.algorithm import compute_all_triangles, reduce_resolution
 from mapa.caching import get_hash_of_geojson, tiff_for_bbox_is_cached
-from mapa.geometry import compute_all_triangles, reduce_resolution
 from mapa.raster import (
     clip_tiff_to_bbox,
     cut_array_to_format,
