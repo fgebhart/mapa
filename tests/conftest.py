@@ -61,3 +61,19 @@ def geojson_bbox():
             ]
         ],
     }
+
+
+@pytest.fixture
+def geojson_bbox_two_stac_items():
+    yield {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [8.631413, 41.318388],
+                [8.631413, 41.762435],
+                [9.685828, 41.762435],
+                [9.685828, 41.318388],
+                [8.631413, 41.318388],
+            ]
+        ],
+    }
