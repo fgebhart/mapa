@@ -1,7 +1,12 @@
 import math
 
-from mapa import convert_bbox_to_stl
+import rasterio as rio
+
+from mapa import _fetch_merge_and_clip_tiffs, _get_tiff_for_bbox, convert_bbox_to_stl
+from mapa.caching import get_hash_of_geojson
+from mapa.stac import _turn_geojson_into_bbox
 from mapa.stl_file import get_dimensions_of_stl_file
+from mapa.utils import _path_to_clipped_tiff, _path_to_merged_tiff
 
 
 def test_create_stl_for_bbox__success(output_file, geojson_bbox) -> None:
@@ -94,3 +99,26 @@ def test_convert_bbox_to_stl__verify_x_y_dimensions(output_file) -> None:
     assert x == 2 * y == 200
     # z dimension should stay the same
     assert z1 == z2
+
+
+def test__get_tiff_for_bbox(geojson_bbox) -> None:
+    tiff = _get_tiff_for_bbox(geojson_bbox, allow_caching=True)
+    assert tiff.is_file()
+
+
+def test__fetch_merge_and_clip_tiffs(geojson_bbox_two_stac_items) -> None:
+    bbox_hash = get_hash_of_geojson(geojson_bbox_two_stac_items)
+    assert isinstance(bbox_hash, str)
+    tiff = _fetch_merge_and_clip_tiffs(geojson_bbox_two_stac_items, bbox_hash, allow_caching=True)
+    assert tiff.is_file()
+    assert _path_to_merged_tiff(bbox_hash).is_file()
+    assert _path_to_clipped_tiff(bbox_hash).is_file()
+
+    # verify coordinates of resulting tiff is in line with the coordinates of the input bbox
+    bbox = _turn_geojson_into_bbox(geojson_bbox_two_stac_items)
+    left, bottom, right, top = bbox[0], bbox[1], bbox[2], bbox[3]
+    data = rio.open(tiff)
+    assert math.isclose(data.bounds.left, left, rel_tol=0.0001)
+    assert math.isclose(data.bounds.bottom, bottom, rel_tol=0.0001)
+    assert math.isclose(data.bounds.right, right, rel_tol=0.0001)
+    assert math.isclose(data.bounds.top, top, rel_tol=0.0001)
