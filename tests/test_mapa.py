@@ -78,27 +78,30 @@ def test_convert_bbox_to_stl__verify_x_y_dimensions(output_file) -> None:
         ],
     }
 
+    size = 200
     path = convert_bbox_to_stl(
         bbox_geometry=bbox,
-        model_size=200,
+        model_size=size,
+        z_offset=None,
         output_file=output_file,
         cut_to_format_ratio=1.0,  # format ratio should equal a square
     )
 
     x, y, z1 = get_dimensions_of_stl_file(path)
-    assert x == y == 200
+    assert x == y == size
 
     path = convert_bbox_to_stl(
         bbox_geometry=bbox,
-        model_size=200,
+        model_size=size,
+        z_offset=None,
         output_file=output_file,
         cut_to_format_ratio=1 / 2,  # one side should be half the length of the second side
     )
 
     x, y, z2 = get_dimensions_of_stl_file(path)
-    assert x == 2 * y == 200
+    assert x == 2 * y == size
     # z dimension should stay the same
-    assert z1 == z2
+    assert math.isclose(z1, z2, rel_tol=0.05)
 
 
 def test__get_tiff_for_bbox(geojson_bbox) -> None:
@@ -122,3 +125,45 @@ def test__fetch_merge_and_clip_tiffs(geojson_bbox_two_stac_items) -> None:
     assert math.isclose(data.bounds.bottom, bottom, rel_tol=0.0001)
     assert math.isclose(data.bounds.right, right, rel_tol=0.0001)
     assert math.isclose(data.bounds.top, top, rel_tol=0.0001)
+
+
+def test_convert_bbox_to_stl__ensure_z_offset_is_correct(output_file) -> None:
+    bbox = {  # corresponds to cotopaxi in Ecuador
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [-78.510456, -0.767292],
+                [-78.510456, -0.613495],
+                [-78.360806, -0.613495],
+                [-78.360806, -0.767292],
+                [-78.510456, -0.767292],
+            ]
+        ],
+    }
+    path1 = convert_bbox_to_stl(
+        bbox_geometry=bbox,
+        output_file=output_file,
+        z_offset=None,  # setting z_offset=None will use natural offset, i.e. height above sea level
+        cut_to_format_ratio=1.0,
+    )
+    x1, y1, z1 = get_dimensions_of_stl_file(path1)
+
+    path2 = convert_bbox_to_stl(
+        bbox_geometry=bbox,
+        output_file=output_file,
+        z_offset=10.0,  # setting z_offset=10.0 will ensure an offset of 10.0mm
+        cut_to_format_ratio=1.0,
+    )
+    x2, y2, z2 = get_dimensions_of_stl_file(path2)
+
+    path3 = convert_bbox_to_stl(
+        bbox_geometry=bbox,
+        output_file=output_file,
+        z_offset=0.0,  # setting z_offset=0.0 will ensure an offset of 0.0mm
+        cut_to_format_ratio=1.0,
+    )
+    x3, y3, z3 = get_dimensions_of_stl_file(path3)
+
+    assert x1 == x2 == x3
+    assert y1 == y2 == y3
+    assert z1 > z2 > z3
