@@ -3,7 +3,7 @@ import math
 import numpy as np
 import pytest
 
-from mapa.geometry import _compute_triangles_of_3d_surface, _create_raster
+from mapa.algorithm import _compute_triangles_of_3d_surface, _create_raster
 
 
 def test_create_raster() -> None:
