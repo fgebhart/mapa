@@ -3,7 +3,7 @@ import math
 import numpy as np
 import pytest
 
-from mapa.algorithm import _compute_triangles_of_3d_surface, _create_raster
+from mapa.algorithm import _compute_triangles_of_3d_surface, _compute_triangles_of_body_side, _create_raster
 
 
 def test_create_raster() -> None:
@@ -139,3 +139,42 @@ def test_compute_triangles_of_3d_surface() -> None:
         ]
     )
     np.testing.assert_array_almost_equal(expected, np.array(triangles))
+
+
+def test__compute_triangles_of_body_side() -> None:
+    array = np.array(
+        [
+            [1, 2],
+            [3, 4],
+        ]
+    )
+    raster = _create_raster(array)
+    max_x, max_y = array.shape
+    side_triangles = _compute_triangles_of_body_side(
+        raster=raster,
+        max_x=max_x,
+        max_y=max_y,
+        x_scale=1.0,
+        y_scale=1.0,
+        z_scale=2.0,
+        z_offset=3.0,
+    )
+    expected = [
+        [[0, 0.0, 5.0], [0, 1.0, 7.0], [0, 0.0, 0]],
+        [[0, 0.0, 0], [0, 1.0, 7.0], [0, 1.0, 0]],
+        [[1.0, 0, 9.0], [0.0, 0, 5.0], [0.0, 0, 0]],
+        [[1.0, 0, 9.0], [0.0, 0, 0], [1.0, 0, 0]],
+        [[0, 1.0, 7.0], [0, 2.0, 7.0], [0, 1.0, 0]],
+        [[0, 1.0, 0], [0, 2.0, 7.0], [0, 2.0, 0]],
+        [[0.0, 2.0, 7.0], [1.0, 2.0, 8.0], [0.0, 2.0, 0]],
+        [[0.0, 2.0, 0], [1.0, 2.0, 8.0], [1.0, 2.0, 0]],
+        [[2.0, 1.0, 8.0], [2.0, 0.0, 9.0], [2.0, 0.0, 0]],
+        [[2.0, 1.0, 8.0], [2.0, 0.0, 0], [2.0, 1.0, 0]],
+        [[2.0, 0, 9.0], [1.0, 0, 9.0], [1.0, 0, 0]],
+        [[2.0, 0, 9.0], [1.0, 0, 0], [2.0, 0, 0]],
+        [[2.0, 2.0, 11.0], [2.0, 1.0, 8.0], [2.0, 1.0, 0]],
+        [[2.0, 2.0, 11.0], [2.0, 1.0, 0], [2.0, 2.0, 0]],
+        [[1.0, 2.0, 8.0], [2.0, 2.0, 11.0], [1.0, 2.0, 0]],
+        [[1.0, 2.0, 0], [2.0, 2.0, 11.0], [2.0, 2.0, 0]],
+    ]
+    assert side_triangles == expected
