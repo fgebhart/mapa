@@ -142,14 +142,15 @@ def test_compute_triangles_of_3d_surface() -> None:
 
 
 def test__compute_triangles_of_body_side() -> None:
+    # note, this is just a smoke test to detect changes in the output of the function
     array = np.array(
         [
             [1, 2],
             [3, 4],
         ]
     )
-    raster = _create_raster(array)
     max_x, max_y = array.shape
+    raster = _create_raster(array, max_x, max_y)
     side_triangles = _compute_triangles_of_body_side(
         raster=raster,
         max_x=max_x,
