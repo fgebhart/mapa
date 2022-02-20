@@ -122,6 +122,7 @@ import numpy as np
 import numpy.typing as npt
 from numpy.lib.stride_tricks import as_strided
 
+from mapa.conf import NO_DATA
 from mapa.utils import timing
 
 
@@ -161,73 +162,240 @@ def _compute_triangles_of_3d_surface(
     z_scale: float,
     z_offset: float,
 ) -> np.ndarray:
+    # 1. dim: x (max_x)
+    # 2. dim: y (max_y)
+    # 3. dim: number of triangles per pixel (4)
+    # 4. dim: number vertices per triangle (3)
+    # 5. dim: coordinates x,y,z per vertex (3)
     triangles = np.full((max_x, max_y, 4, 3, 3), -1.0)
+
     for ix in range(0, max_x):
         for iy in range(0, max_y):
             if ix > max_x or iy > max_y:
                 continue
             else:
-                # top triangle
-                # first vertex
-                triangles[ix, iy, 0, 0, 0] = (ix + 1 / 2) * x_scale
-                triangles[ix, iy, 0, 0, 1] = (iy + 1 / 2) * y_scale
-                triangles[ix, iy, 0, 0, 2] = (array[ix, iy]) * z_scale + z_offset
-                # second vertex
-                triangles[ix, iy, 0, 1, 0] = ix * x_scale
-                triangles[ix, iy, 0, 1, 1] = iy * y_scale
-                triangles[ix, iy, 0, 1, 2] = (raster[ix, iy]) * z_scale + z_offset
-                # third vertex
-                triangles[ix, iy, 0, 2, 0] = (ix + 1) * x_scale
-                triangles[ix, iy, 0, 2, 1] = iy * y_scale
-                triangles[ix, iy, 0, 2, 2] = (raster[ix + 1, iy]) * z_scale + z_offset
+                if array[ix, iy] != NO_DATA:
+                    # top triangle
+                    # first vertex
+                    triangles[ix, iy, 0, 0, 0] = (ix + 1 / 2) * x_scale
+                    triangles[ix, iy, 0, 0, 1] = (iy + 1 / 2) * y_scale
+                    triangles[ix, iy, 0, 0, 2] = (array[ix, iy]) * z_scale + z_offset
+                    # second vertex
+                    triangles[ix, iy, 0, 1, 0] = ix * x_scale
+                    triangles[ix, iy, 0, 1, 1] = iy * y_scale
+                    triangles[ix, iy, 0, 1, 2] = (raster[ix, iy]) * z_scale + z_offset
+                    # third vertex
+                    triangles[ix, iy, 0, 2, 0] = (ix + 1) * x_scale
+                    triangles[ix, iy, 0, 2, 1] = iy * y_scale
+                    triangles[ix, iy, 0, 2, 2] = (raster[ix + 1, iy]) * z_scale + z_offset
 
-                # left triangle
-                # first vertex
-                triangles[ix, iy, 1, 0, 0] = ix * x_scale
-                triangles[ix, iy, 1, 0, 1] = (iy + 1) * y_scale
-                triangles[ix, iy, 1, 0, 2] = (raster[ix, iy + 1]) * z_scale + z_offset
-                # second vertex
-                triangles[ix, iy, 1, 1, 0] = ix * x_scale
-                triangles[ix, iy, 1, 1, 1] = iy * y_scale
-                triangles[ix, iy, 1, 1, 2] = (raster[ix, iy]) * z_scale + z_offset
-                # third vertex
-                triangles[ix, iy, 1, 2, 0] = (ix + 1 / 2) * x_scale
-                triangles[ix, iy, 1, 2, 1] = (iy + 1 / 2) * y_scale
-                triangles[ix, iy, 1, 2, 2] = (array[ix, iy]) * z_scale + z_offset
+                    # left triangle
+                    # first vertex
+                    triangles[ix, iy, 1, 0, 0] = ix * x_scale
+                    triangles[ix, iy, 1, 0, 1] = (iy + 1) * y_scale
+                    triangles[ix, iy, 1, 0, 2] = (raster[ix, iy + 1]) * z_scale + z_offset
+                    # second vertex
+                    triangles[ix, iy, 1, 1, 0] = ix * x_scale
+                    triangles[ix, iy, 1, 1, 1] = iy * y_scale
+                    triangles[ix, iy, 1, 1, 2] = (raster[ix, iy]) * z_scale + z_offset
+                    # third vertex
+                    triangles[ix, iy, 1, 2, 0] = (ix + 1 / 2) * x_scale
+                    triangles[ix, iy, 1, 2, 1] = (iy + 1 / 2) * y_scale
+                    triangles[ix, iy, 1, 2, 2] = (array[ix, iy]) * z_scale + z_offset
 
-                # bottom triangle
-                # first vertex
-                triangles[ix, iy, 2, 0, 0] = (ix + 1) * x_scale
-                triangles[ix, iy, 2, 0, 1] = (iy + 1) * y_scale
-                triangles[ix, iy, 2, 0, 2] = (raster[ix + 1, iy + 1]) * z_scale + z_offset
-                # second vertex
-                triangles[ix, iy, 2, 1, 0] = ix * x_scale
-                triangles[ix, iy, 2, 1, 1] = (iy + 1) * y_scale
-                triangles[ix, iy, 2, 1, 2] = (raster[ix, iy + 1]) * z_scale + z_offset
-                # third vertex
-                triangles[ix, iy, 2, 2, 0] = (ix + 1 / 2) * x_scale
-                triangles[ix, iy, 2, 2, 1] = (iy + 1 / 2) * y_scale
-                triangles[ix, iy, 2, 2, 2] = (array[ix, iy]) * z_scale + z_offset
+                    # bottom triangle
+                    # first vertex
+                    triangles[ix, iy, 2, 0, 0] = (ix + 1) * x_scale
+                    triangles[ix, iy, 2, 0, 1] = (iy + 1) * y_scale
+                    triangles[ix, iy, 2, 0, 2] = (raster[ix + 1, iy + 1]) * z_scale + z_offset
+                    # second vertex
+                    triangles[ix, iy, 2, 1, 0] = ix * x_scale
+                    triangles[ix, iy, 2, 1, 1] = (iy + 1) * y_scale
+                    triangles[ix, iy, 2, 1, 2] = (raster[ix, iy + 1]) * z_scale + z_offset
+                    # third vertex
+                    triangles[ix, iy, 2, 2, 0] = (ix + 1 / 2) * x_scale
+                    triangles[ix, iy, 2, 2, 1] = (iy + 1 / 2) * y_scale
+                    triangles[ix, iy, 2, 2, 2] = (array[ix, iy]) * z_scale + z_offset
 
-                # right triangle
-                # first vertex
-                triangles[ix, iy, 3, 0, 0] = (ix + 1 / 2) * x_scale
-                triangles[ix, iy, 3, 0, 1] = (iy + 1 / 2) * y_scale
-                triangles[ix, iy, 3, 0, 2] = (array[ix, iy]) * z_scale + z_offset
-                # second vertex
-                triangles[ix, iy, 3, 1, 0] = (ix + 1) * x_scale
-                triangles[ix, iy, 3, 1, 1] = iy * y_scale
-                triangles[ix, iy, 3, 1, 2] = (raster[ix + 1, iy]) * z_scale + z_offset
-                # third vertex
-                triangles[ix, iy, 3, 2, 0] = (ix + 1) * x_scale
-                triangles[ix, iy, 3, 2, 1] = (iy + 1) * y_scale
-                triangles[ix, iy, 3, 2, 2] = (raster[ix + 1, iy + 1]) * z_scale + z_offset
+                    # right triangle
+                    # first vertex
+                    triangles[ix, iy, 3, 0, 0] = (ix + 1 / 2) * x_scale
+                    triangles[ix, iy, 3, 0, 1] = (iy + 1 / 2) * y_scale
+                    triangles[ix, iy, 3, 0, 2] = (array[ix, iy]) * z_scale + z_offset
+                    # second vertex
+                    triangles[ix, iy, 3, 1, 0] = (ix + 1) * x_scale
+                    triangles[ix, iy, 3, 1, 1] = iy * y_scale
+                    triangles[ix, iy, 3, 1, 2] = (raster[ix + 1, iy]) * z_scale + z_offset
+                    # third vertex
+                    triangles[ix, iy, 3, 2, 0] = (ix + 1) * x_scale
+                    triangles[ix, iy, 3, 2, 1] = (iy + 1) * y_scale
+                    triangles[ix, iy, 3, 2, 2] = (raster[ix + 1, iy + 1]) * z_scale + z_offset
 
     return triangles.reshape((max_x * max_y * 4, 3, 3))
 
 
 @timing
 def _compute_triangles_of_body_side(
+    raster: npt.ArrayLike,
+    array: npt.ArrayLike,
+    max_x: int,
+    max_y: int,
+    x_scale: float,
+    y_scale: float,
+    z_scale: float,
+    z_offset: float,
+) -> np.ndarray:
+    # collect all boundary coordinates of the cropped shape
+    boundary = []
+    # in case entire array is full of valid data, take first/last row and col as boundary
+    if NO_DATA not in array:
+        return _compute_triangles_of_body_side__old(raster, max_x, max_y, x_scale, y_scale, z_scale, z_offset)
+    for ix in range(0, array.shape[0] - 1):
+        for iy in range(0, array.shape[1] - 1):
+            # special treatment of first and last rows/cols
+            if ix >= max_x or iy >= max_y:
+                if ix >= max_x and iy < max_y:  # last row
+                    pass  # TODO
+                elif iy >= max_y and ix < max_x:  # last col
+                    pass  # TODO
+                else:  # last pixel
+                    pass  # TODO
+            elif ix == 0 or iy == 0:  # first pixel
+                pass
+            else:  # remaining pixel
+                if (
+                    (  # if at least one neighbor pixel is not NO_DATA
+                        array[ix - 1, iy - 1] != NO_DATA  # top left
+                        or array[ix, iy - 1] != NO_DATA  # top
+                        or array[ix + 1, iy - 1] != NO_DATA  # top right
+                        or array[ix + 1, iy] != NO_DATA  # right
+                        or array[ix + 1, iy + 1] != NO_DATA  # bottom right
+                        or array[ix, iy + 1] != NO_DATA  # bottom
+                        or array[ix - 1, iy + 1] != NO_DATA  # bottom left
+                        or array[ix - 1, iy] != NO_DATA  # left
+                    )
+                    and (  # if at least one neighbor pixel is NO_DATA
+                        array[ix - 1, iy - 1] == NO_DATA  # top left
+                        or array[ix, iy - 1] == NO_DATA  # top
+                        or array[ix + 1, iy - 1] == NO_DATA  # top right
+                        or array[ix + 1, iy] == NO_DATA  # right
+                        or array[ix + 1, iy + 1] == NO_DATA  # bottom right
+                        or array[ix, iy + 1] == NO_DATA  # bottom
+                        or array[ix - 1, iy + 1] == NO_DATA  # bottom left
+                        or array[ix - 1, iy] == NO_DATA  # left
+                    )
+                    and (array[ix, iy] != NO_DATA)
+                ):
+                    boundary.append(
+                        [ix * x_scale, iy * y_scale, array[ix][iy] * z_scale + z_offset],
+                    )
+    boundary = np.array(boundary)
+
+    # loop over boundary coordinates and build triangles
+    max_n = len(boundary)
+    # for every boundary coordinate there will be two triangles
+    side_triangles = np.full((max_n * 2, 3, 3), -1)
+    ground_triangles = np.full((max_n, 3, 3), -1)
+    for i in range(0, max_n):
+        if i == max_n - 1:  # special treatment for last element
+            # side triangle with two vertices at ground
+            # first vertex at top / 3d surface
+            side_triangles[i, 0, 0] = boundary[i][0]
+            side_triangles[i, 0, 1] = boundary[i][1]
+            side_triangles[i, 0, 2] = boundary[i][2]
+            # second vertex at ground
+            side_triangles[i, 1, 0] = boundary[i][0]
+            side_triangles[i, 1, 1] = boundary[i][1]
+            side_triangles[i, 1, 2] = 0
+            # third vertex at ground of first point
+            side_triangles[i, 2, 0] = boundary[0][0]
+            side_triangles[i, 2, 1] = boundary[0][1]
+            side_triangles[i, 2, 2] = 0
+
+            # side triangle with two vertices at top / 3d surface
+            # first vertex at top / 3d surface
+            side_triangles[i + max_n, 0, 0] = boundary[i][0]
+            side_triangles[i + max_n, 0, 1] = boundary[i][1]
+            side_triangles[i + max_n, 0, 2] = boundary[i][2]
+            # second vertex at top / 3d surface of first point
+            side_triangles[i + max_n, 1, 0] = boundary[0][0]
+            side_triangles[i + max_n, 1, 1] = boundary[0][1]
+            side_triangles[i + max_n, 1, 2] = boundary[0][2]
+            # third vertex at ground of first point
+            side_triangles[i + max_n, 2, 0] = boundary[0][0]
+            side_triangles[i + max_n, 2, 1] = boundary[0][1]
+            side_triangles[i + max_n, 2, 2] = 0
+
+            # ground triangle
+            # first vertex at boundary
+            ground_triangles[i, 0, 0] = boundary[i][0]
+            ground_triangles[i, 0, 1] = boundary[i][1]
+            ground_triangles[i, 0, 2] = 0
+            # second vertex at next point of boundary coordinates
+            ground_triangles[i, 1, 0] = boundary[0][0]
+            ground_triangles[i, 1, 1] = boundary[0][1]
+            ground_triangles[i, 1, 2] = 0
+            # third vertex is always the first coordinate of boundary
+            ground_triangles[i, 2, 0] = boundary[0][0]
+            ground_triangles[i, 2, 1] = boundary[0][1]
+            ground_triangles[i, 2, 2] = 0
+        else:
+            # side triangle with two vertices at ground
+            # first vertex at top / 3d surface
+            side_triangles[i, 0, 0] = boundary[i][0]
+            side_triangles[i, 0, 1] = boundary[i][1]
+            side_triangles[i, 0, 2] = boundary[i][2]
+            # second vertex at ground
+            side_triangles[i, 1, 0] = boundary[i][0]
+            side_triangles[i, 1, 1] = boundary[i][1]
+            side_triangles[i, 1, 2] = 0
+            # third vertex at ground of next point
+            side_triangles[i, 2, 0] = boundary[i + 1][0]
+            side_triangles[i, 2, 1] = boundary[i + 1][1]
+            side_triangles[i, 2, 2] = 0
+
+            # side triangle with two vertices at top / 3d surface
+            # first vertex at top / 3d surface
+            side_triangles[i + max_n, 0, 0] = boundary[i][0]
+            side_triangles[i + max_n, 0, 1] = boundary[i][1]
+            side_triangles[i + max_n, 0, 2] = boundary[i][2]
+            # second vertex at top / 3d surface of next point
+            side_triangles[i + max_n, 1, 0] = boundary[i + 1][0]
+            side_triangles[i + max_n, 1, 1] = boundary[i + 1][1]
+            side_triangles[i + max_n, 1, 2] = boundary[i + 1][2]
+            # third vertex at ground of next point
+            side_triangles[i + max_n, 2, 0] = boundary[i + 1][0]
+            side_triangles[i + max_n, 2, 1] = boundary[i + 1][1]
+            side_triangles[i + max_n, 2, 2] = 0
+
+            # ground triangle
+            # first vertex at boundary
+            ground_triangles[i, 0, 0] = boundary[i][0]
+            ground_triangles[i, 0, 1] = boundary[i][1]
+            ground_triangles[i, 0, 2] = 0
+            # second vertex at next point of boundary coordinates
+            ground_triangles[i, 1, 0] = boundary[i + 1][0]
+            ground_triangles[i, 1, 1] = boundary[i + 1][1]
+            ground_triangles[i, 1, 2] = 0
+            # third vertex is always the first coordinate of boundary
+            ground_triangles[i, 2, 0] = boundary[0][0]
+            ground_triangles[i, 2, 1] = boundary[0][1]
+            ground_triangles[i, 2, 2] = 0
+
+    # creating coordinates of ground is as easy as taking the boundary array and setting the z coordinate to 0
+    # ground = boundary.copy()
+    # ground[:, -1] = 0
+
+    # in order to create ground triangles, we draw triangles with two vertices at the outer line of the boundary
+    # coordinates and the third vertex is on an arbitrary point within the boundary, could for example be the first point
+    # in the boundary coordinates
+    # breakpoint()
+
+    return side_triangles.tolist(), ground_triangles.tolist()
+
+
+@timing
+def _compute_triangles_of_body_side__old(
     raster: npt.ArrayLike, max_x: int, max_y: int, x_scale: float, y_scale: float, z_scale: float, z_offset: float
 ) -> np.ndarray:
     # loop over raster and build triangles when in first and last col and row
@@ -386,8 +554,9 @@ def compute_all_triangles(
         z_offset=z_offset,
     )
     click.echo(f"{'📐  computing triangles of body sides...':<50s}", nl=False)
-    side_triangles = _compute_triangles_of_body_side(
+    side_triangles, ground_triangles = _compute_triangles_of_body_side(
         raster=raster,
+        array=array,
         max_x=max_x,
         max_y=max_y,
         x_scale=x_scale,
@@ -395,8 +564,8 @@ def compute_all_triangles(
         z_scale=combined_z_scale,
         z_offset=z_offset,
     )
-    bottom_triangles = _compute_triangles_of_bottom(max_x=max_x, max_y=max_y, x_scale=x_scale, y_scale=y_scale)
-    return np.vstack((dem_triangles, side_triangles, bottom_triangles))
+    # bottom_triangles = _compute_triangles_of_bottom(max_x=max_x, max_y=max_y, x_scale=x_scale, y_scale=y_scale)
+    return np.vstack((dem_triangles, side_triangles, ground_triangles))
 
 
 @timing

@@ -11,6 +11,7 @@ from rasterio.mask import mask
 from rasterio.merge import merge
 from rasterio.windows import Window
 
+from mapa.conf import NO_DATA
 from mapa.utils import _path_to_clipped_tiff, _path_to_merged_tiff, timing
 
 
@@ -18,7 +19,7 @@ from mapa.utils import _path_to_clipped_tiff, _path_to_merged_tiff, timing
 def clip_tiff_to_bbox(input_tiff: Path, bbox_geometry: dict, bbox_hash: str) -> Path:
     click.echo(f"{'🔪  clipping region of interest...':<50s}", nl=False)
     data = rio.open(input_tiff)
-    out_img, out_transform = mask(data, shapes=[bbox_geometry], crop=True)
+    out_img, out_transform = mask(data, shapes=[bbox_geometry], crop=True, nodata=NO_DATA, filled=True)
     out_meta = data.meta.copy()
     out_meta.update(
         {
@@ -27,6 +28,7 @@ def clip_tiff_to_bbox(input_tiff: Path, bbox_geometry: dict, bbox_hash: str) -> 
             "width": out_img.shape[2],
             "transform": out_transform,
             "crs": data.crs,
+            "nodata": NO_DATA,
         }
     )
     clipped_tiff = _path_to_clipped_tiff(bbox_hash)

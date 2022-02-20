@@ -96,7 +96,6 @@ def convert_tiff_to_stl(
     tiff = rio.open(input_file)
     elevation_scale = determine_elevation_scale(tiff, model_size)
     array = tiff.read()
-
     return convert_array_to_stl(
         array=array,
         as_ascii=as_ascii,

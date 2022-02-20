@@ -167,3 +167,29 @@ def test_convert_bbox_to_stl__ensure_z_offset_is_correct(output_file) -> None:
     assert x1 == x2 == x3
     assert y1 == y2 == y3
     assert z1 > z2 > z3
+
+
+def test_convert_bbox_to_stl__check_array(output_file) -> None:
+    bbox = {  # corresponds to cotopaxi also, but shape is more like a octagon polygon instead of a rectangle
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [-78.499816, -0.660533],
+                [-78.493638, -0.708938],
+                [-78.442839, -0.735371],
+                [-78.394443, -0.713401],
+                [-78.372819, -0.661563],
+                [-78.398905, -0.617277],
+                [-78.447987, -0.607664],
+                [-78.482997, -0.625173],
+                [-78.499816, -0.660533],
+            ]
+        ],
+    }
+    convert_bbox_to_stl(
+        bbox_geometry=bbox,
+        output_file="output_file.stl",
+        z_offset=-50.0,
+        cut_to_format_ratio=1.0,
+        # allow_caching=False,
+    )

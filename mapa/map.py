@@ -5,6 +5,9 @@ from ipywidgets import Layout
 
 CENTER = [40.5566, 23.4660]
 ZOOM = 4
+OPACITY = 0.3
+COLOR = "#0000FF"
+SHAPE_OPTIONS = {"fillColor": COLOR, "color": COLOR, "fillOpacity": OPACITY}
 
 
 def show_map(center: List[float] = CENTER, zoom: int = ZOOM) -> Tuple[Map, DrawControl]:
@@ -12,11 +15,14 @@ def show_map(center: List[float] = CENTER, zoom: int = ZOOM) -> Tuple[Map, DrawC
     m.add_control(ScaleControl(position="bottomleft"))
     m.add_layer(basemap_to_tiles(basemaps.OpenTopoMap))
 
-    dc = DrawControl(rectangle={"shapeOptions": {"color": "#0000FF"}}, polyline={}, polygon={}, circlemarker={})
+    dc = DrawControl(circlemarker={}, polyline={})
+    dc.rectangle = {"shapeOptions": SHAPE_OPTIONS}
+    dc.circle = {"shapeOptions": SHAPE_OPTIONS}
+    dc.polygon = {"shapeOptions": SHAPE_OPTIONS, "allowIntersection": False}
+    m.add_control(dc)
 
     def handle_draw(target, action, geo_json):
-        print("Rectangle detected, execute next cells to continue!")
+        print("Shape detected, execute next cells to continue!")
 
     dc.on_draw(handle_draw)
-    m.add_control(dc)
     return m, dc
