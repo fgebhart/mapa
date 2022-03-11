@@ -36,7 +36,7 @@ executing the cells to create a 3d model of whatever place you like.
 
  Slice STL file         | 3D print
 :-------------------------:|:-------------------------:
-![](https://i.imgur.com/AKSRHbK.jpg)  |  ![](https://i.imgur.com/WQn9nwY.png)
+![](https://i.imgur.com/AKSRHbK.jpg)  |  ![](https://i.imgur.com/DTc1yTB.jpg)
 
 ### 2. Using the dem2stl cli
 The `dem2stl` cli lets you create a 3d-printable STL file based on your tiff file. You can run a demo computation to get
