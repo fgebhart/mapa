@@ -33,16 +33,21 @@ def _get_tiff_file(stac_item: Item, allow_caching: bool) -> Path:
         return download_file(stac_item.assets["data"].href, tiff)
 
 
-def fetch_stac_items_for_bbox(geojson: dict, allow_caching: bool) -> List[Path]:
+def fetch_stac_items_for_bbox(geojson: dict, allow_caching: bool, max_number_of_stac_items: int) -> List[Path]:
     bbox = _turn_geojson_into_bbox(geojson)
     client = Client.open(conf.PLANETARY_COMPUTER_API_URL, ignore_conformance=True)
     search = client.search(collections=[conf.PLANETARY_COMPUTER_COLLECTION], bbox=bbox)
     items = list(search.get_items())
     if len(items) > 0:
-        click.echo(f"⬇️  fetching {len(items)} stac items...")
-        files = []
-        for item in items:
-            files.append(_get_tiff_file(item, allow_caching))
-        return files
+        if len(items) < max_number_of_stac_items or max_number_of_stac_items < 0:
+            click.echo(f"⬇️  fetching {len(items)} stac items...")
+            files = []
+            for item in items:
+                files.append(_get_tiff_file(item, allow_caching))
+            return files
+        else:
+            raise ValueError(
+                f"Given area of input geometry exceeds the maximal number of stac items ({max_number_of_stac_items})"
+            )
     else:
         raise ValueError("Could not find the desired STAC item for the given bounding box.")
