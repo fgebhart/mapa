@@ -176,6 +176,11 @@ def convert_bbox_to_stl(
         try to cut the shorter side of the input tiff. By default None
     allow_caching : bool, optional
         Whether caching previous downloaded GeoTIFF files should be enabled/disabled. By default True
+    max_number_of_stac_items : int, optional
+        Specify a threshold / maximal number of stac items to be allowed to be downloaded from the stac API.
+        Using a negative number will disable this check. This might be useful when running as a slim web app
+        where limited resources are a concern. If max number of stac items is exceeded a ValueError is raised.
+        By default -1
 
     Returns
     -------

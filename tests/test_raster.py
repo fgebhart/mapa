@@ -234,7 +234,7 @@ def test_remove_empty_first_and_last_rows_and_cols() -> None:
 
 
 def test_determine_z_scale(geojson_bbox) -> None:
-    tiff_path = fetch_stac_items_for_bbox(geojson_bbox, allow_caching=True)
+    tiff_path = fetch_stac_items_for_bbox(geojson_bbox, allow_caching=True, max_number_of_stac_items=-1)
     tiff = rio.open(tiff_path[0])
     scale = determine_elevation_scale(tiff, model_size=200)
     expected_scale = 0.0017986407274490762

@@ -106,14 +106,16 @@ def test_convert_bbox_to_stl__verify_x_y_dimensions(output_file) -> None:
 
 
 def test__get_tiff_for_bbox(geojson_bbox) -> None:
-    tiff = _get_tiff_for_bbox(geojson_bbox, allow_caching=True)
+    tiff = _get_tiff_for_bbox(geojson_bbox, allow_caching=True, max_number_of_stac_items=-1)
     assert tiff.is_file()
 
 
 def test__fetch_merge_and_clip_tiffs(geojson_bbox_two_stac_items) -> None:
     bbox_hash = get_hash_of_geojson(geojson_bbox_two_stac_items)
     assert isinstance(bbox_hash, str)
-    tiff = _fetch_merge_and_clip_tiffs(geojson_bbox_two_stac_items, bbox_hash, allow_caching=True)
+    tiff = _fetch_merge_and_clip_tiffs(
+        geojson_bbox_two_stac_items, bbox_hash, allow_caching=True, max_number_of_stac_items=-1
+    )
     assert tiff.is_file()
     assert _path_to_merged_tiff(bbox_hash).is_file()
     assert _path_to_clipped_tiff(bbox_hash).is_file()
