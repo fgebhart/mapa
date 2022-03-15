@@ -17,15 +17,25 @@ jobs:
       with:
         python-version: 3.8
 
-    - name: Run image
-      uses: abatilo/actions-poetry@v2.1.3
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
       with:
-        poetry-version: 1.1.11
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+        installer-parallel: true
+
+    - name: Load cached venv
+      id: cached-poetry-dependencies
+      uses: actions/cache@v2
+      with:
+        path: .venv
+        key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
     - name: Install dependencies
-      run: |
-        poetry install
+      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+      run: poetry install --no-interaction
 
     - name: Run Tests
       run: |
-        poetry run pytest tests/ -vv  --color=yes
+        source .venv/bin/activate
+        poetry run pytest tests/ -vv --color=yes
