@@ -110,8 +110,10 @@ def convert_tiff_to_stl(
     )
 
 
-def _fetch_merge_and_clip_tiffs(bbox_geojson: dict, bbox_hash: str, allow_caching: bool) -> Path:
-    tiffs = fetch_stac_items_for_bbox(bbox_geojson, allow_caching)
+def _fetch_merge_and_clip_tiffs(
+    bbox_geojson: dict, bbox_hash: str, allow_caching: bool, max_number_of_stac_items: int
+) -> Path:
+    tiffs = fetch_stac_items_for_bbox(bbox_geojson, allow_caching, max_number_of_stac_items)
     if len(tiffs) > 1:
         merged_tiff = merge_tiffs(tiffs, bbox_hash)
     else:
@@ -119,13 +121,13 @@ def _fetch_merge_and_clip_tiffs(bbox_geojson: dict, bbox_hash: str, allow_cachin
     return clip_tiff_to_bbox(merged_tiff, bbox_geojson, bbox_hash)
 
 
-def _get_tiff_for_bbox(bbox_geojson: dict, allow_caching: bool) -> Path:
+def _get_tiff_for_bbox(bbox_geojson: dict, allow_caching: bool, max_number_of_stac_items: int) -> Path:
     bbox_hash = get_hash_of_geojson(bbox_geojson)
     if tiff_for_bbox_is_cached(bbox_hash) and allow_caching:
         click.echo("🚀  using cached tiff...                           ✅ (0.0s)")
         return _path_to_clipped_tiff(bbox_hash)
     else:
-        return _fetch_merge_and_clip_tiffs(bbox_geojson, bbox_hash, allow_caching)
+        return _fetch_merge_and_clip_tiffs(bbox_geojson, bbox_hash, allow_caching, max_number_of_stac_items)
 
 
 def convert_bbox_to_stl(
@@ -138,6 +140,7 @@ def convert_bbox_to_stl(
     z_scale: float = 1.0,
     cut_to_format_ratio: Union[None, float] = None,
     allow_caching: bool = True,
+    max_number_of_stac_items: int = -1,
 ) -> Path:
     """
     Takes a GeoJSON containing a bounding box as input, fetches the required STAC GeoTIFFs for the
@@ -173,6 +176,11 @@ def convert_bbox_to_stl(
         try to cut the shorter side of the input tiff. By default None
     allow_caching : bool, optional
         Whether caching previous downloaded GeoTIFF files should be enabled/disabled. By default True
+    max_number_of_stac_items : int, optional
+        Specify a threshold / maximal number of stac items to be allowed to be downloaded from the stac API.
+        Using a negative number will disable this check. This might be useful when running as a slim web app
+        where limited resources are a concern. If max number of stac items is exceeded a ValueError is raised.
+        By default -1
 
     Returns
     -------
@@ -186,7 +194,7 @@ def convert_bbox_to_stl(
 
     click.echo("⏳  converting bounding box to STL file... \n")
 
-    tiff = _get_tiff_for_bbox(bbox_geometry, allow_caching)
+    tiff = _get_tiff_for_bbox(bbox_geometry, allow_caching, max_number_of_stac_items)
     output_file = convert_tiff_to_stl(
         input_file=tiff,
         as_ascii=as_ascii,
