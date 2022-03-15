@@ -77,3 +77,15 @@ def geojson_bbox_two_stac_items():
             ]
         ],
     }
+
+
+@pytest.fixture
+def progress_bar():
+    class ProgressBar:
+        def __init__(self) -> None:
+            self.progress_track = []
+
+        def progress(self, value: int) -> None:
+            self.progress_track.append(value)
+
+    yield ProgressBar()

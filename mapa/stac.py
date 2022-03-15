@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List
+from typing import List, Union
 
 import click
 import geojson
@@ -33,16 +33,21 @@ def _get_tiff_file(stac_item: Item, allow_caching: bool) -> Path:
         return download_file(stac_item.assets["data"].href, tiff)
 
 
-def fetch_stac_items_for_bbox(geojson: dict, allow_caching: bool, max_number_of_stac_items: int) -> List[Path]:
+def fetch_stac_items_for_bbox(
+    geojson: dict, allow_caching: bool, max_number_of_stac_items: int, progress_bar: Union[None, object] = None
+) -> List[Path]:
     bbox = _turn_geojson_into_bbox(geojson)
     client = Client.open(conf.PLANETARY_COMPUTER_API_URL, ignore_conformance=True)
     search = client.search(collections=[conf.PLANETARY_COMPUTER_COLLECTION], bbox=bbox)
     items = list(search.get_items())
-    if len(items) > 0:
-        if len(items) < max_number_of_stac_items or max_number_of_stac_items < 0:
-            click.echo(f"⬇️  fetching {len(items)} stac items...")
+    n = len(items)
+    if n > 0:
+        if n < max_number_of_stac_items or max_number_of_stac_items < 0:
+            click.echo(f"⬇️  fetching {n} stac items...")
             files = []
-            for item in items:
+            for i, item in enumerate(items):
+                if progress_bar:
+                    progress_bar.progress(int(100 / n * (i + 1)))
                 files.append(_get_tiff_file(item, allow_caching))
             return files
         else:

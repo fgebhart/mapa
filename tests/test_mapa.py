@@ -229,3 +229,13 @@ def test_convert_bbox_to_stl__max_number_of_stac_items(output_file, geojson_bbox
         allow_caching=caching,
         max_number_of_stac_items=max_number_of_stac_items,
     )
+
+
+def test_convert_bbox_to_stl__progress_bar(output_file, geojson_bbox_two_stac_items, progress_bar) -> None:
+    convert_bbox_to_stl(
+        bbox_geometry=geojson_bbox_two_stac_items,
+        output_file=output_file,
+        allow_caching=False,
+        progress_bar=progress_bar,
+    )
+    assert progress_bar.progress_track == [50, 100]
