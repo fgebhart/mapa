@@ -1,7 +1,7 @@
 from pathlib import Path
 
 SUPPORTED_INPUT_FORMAT = {".tiff", ".tif"}
-MAXIMUM_RESOLUTION = 1_000
+MAXIMUM_RESOLUTION = 800
 PERFORMANCE_WARNING_THRESHOLD = 5_000 * 5_000
 
 # default params
