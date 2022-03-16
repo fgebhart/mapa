@@ -5,6 +5,15 @@ description = "🌍 Create 3d-printable STLs from satellite elevation data 🌏"
 authors = ["Fabian Gebhart"]
 repository = "https://github.com/fgebhart/mapa"
 readme = "README.md"
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
