@@ -22,8 +22,19 @@ pip install mapa
 ## Usage
 `mapa` provides the following approaches for creating STL files:
 
-### 1. Using the `mapa` interactive map
-The easiest way is using the `mapa` cli. Simply type
+### 1. Using the `mapa` streamlit web app 🎈
+Certainly the easiest way to interact with `mapa` is to use the streamlit web app. No need to install anything. Simply
+access it via your browser. It is based on the [mapa-streamlit repo](https://github.com/fgebhart/mapa-streamlit) and can
+be accessed at:
+
+https://share.streamlit.io/fgebhart/mapa-streamlit/main/app.py
+
+Note, that the streamlit web app however, does not use the maximal available resolution of the ALOS DEM GeoTIFFs, as it
+would take too much time and cloud resources to compute STL files of e.g. multiple GBs. If you are keen in getting STL
+files with the highest resolution possible, I'd recommend following the next step.
+
+### 2. Using the `mapa` interactive map 🗺
+The second easiest way is using the `mapa` cli. After installing `mapa`, simply type
 ```
 mapa
 ```
@@ -38,7 +49,7 @@ executing the cells to create a 3d model of whatever place you like.
 :-------------------------:|:-------------------------:
 ![](https://i.imgur.com/AKSRHbKh.jpg)  |  ![](https://i.imgur.com/DTc1yTBh.jpg)
 
-### 2. Using the dem2stl cli
+### 3. Using the dem2stl cli 💻
 The `dem2stl` cli lets you create a 3d-printable STL file based on your tiff file. You can run a demo computation to get
 a feeling of how the output STL will look like:
 ```
@@ -88,7 +99,7 @@ Options:
   --help                      Show this message and exit.
 ```
 
-### 3. Using `mapa` as python library
+### 4. Using `mapa` as python library 📚
 In case you are building your own application you can simply use `mapa`'s functionality within your application by importing the functions of the module.
 ```python
 from mapa import convert_tiff_to_stl
