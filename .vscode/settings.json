@@ -5,7 +5,8 @@
         "alos",
         "mapa",
         "rasterio",
-        "stac"
+        "stac",
+        "streamlit"
     ],
     "terminal.integrated.env.osx": {
         "PYTHONBREAKPOINT": "ipdb.set_trace"
