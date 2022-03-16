@@ -233,11 +233,11 @@ def test_remove_empty_first_and_last_rows_and_cols() -> None:
     np.testing.assert_array_equal(expected, result)
 
 
-def test_determine_z_scale(geojson_bbox) -> None:
-    tiff_path = fetch_stac_items_for_bbox(geojson_bbox, allow_caching=True, max_number_of_stac_items=-1)
+def test_determine_z_scale(geojson_bbox, mock_file_download) -> None:
+    tiff_path = fetch_stac_items_for_bbox(geojson_bbox, allow_caching=False, max_number_of_stac_items=-1)
     tiff = rio.open(tiff_path[0])
     scale = determine_elevation_scale(tiff, model_size=200)
-    expected_scale = 0.0017986407274490762
+    expected_scale = 0.0013001543499978835
     assert expected_scale == scale
 
 

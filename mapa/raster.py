@@ -101,7 +101,7 @@ def cut_array_to_format(array: npt.ArrayLike, cut_to_format_ratio: float) -> np.
         return _cut_array_to_rectangular_shape(array, cut_to_format_ratio)
 
 
-def _get_coordinate_of_pixel(row: int, col: int, tiff) -> Tuple[float]:
+def _get_coordinate_of_pixel(row: int, col: int, tiff: DatasetReader) -> Tuple[float]:
     meta = tiff.meta
     window = Window(0, 0, meta["width"], meta["height"])
     meta["transform"] = rio.windows.transform(window, tiff.transform)
