@@ -3,6 +3,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from mapa import stac
+
 
 @pytest.fixture
 def test_stl_binary():
@@ -64,6 +66,22 @@ def geojson_bbox():
 
 
 @pytest.fixture
+def hawaii_bbox():
+    yield {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [-155.97006614980282, 20.120800146260834],
+                [-155.2514139225072, 20.120800146260834],
+                [-155.2514139225072, 19.402147918965216],
+                [-155.97006614980282, 19.402147918965216],
+                [-155.97006614980282, 20.120800146260834],
+            ]
+        ],
+    }
+
+
+@pytest.fixture
 def geojson_bbox_two_stac_items():
     yield {
         "type": "Polygon",
@@ -89,3 +107,11 @@ def progress_bar():
             self.progress_track.append(value)
 
     yield ProgressBar()
+
+
+@pytest.fixture
+def mock_file_download(monkeypatch, test_tiff):
+    def _mocked_download_file(url: str, local_file: Path) -> Path:
+        return test_tiff
+
+    monkeypatch.setattr(stac, "_download_file", _mocked_download_file)

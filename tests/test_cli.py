@@ -5,7 +5,7 @@ import pytest
 from click.testing import CliRunner
 from rasterio.errors import RasterioIOError
 
-from mapa.cli import dem2stl
+from mapa.cli import dem2stl, mapa
 from mapa.stl_file import get_dimensions_of_stl_file
 
 
@@ -15,6 +15,10 @@ def test_dem2stl__version() -> None:
     result = cli.invoke(dem2stl, ["--version"])
     assert result.exit_code == 0, result.stdout
     assert "dem2stl, version" in result.stdout
+
+    result = cli.invoke(mapa, ["--version"])
+    assert result.exit_code == 0, result.stdout
+    assert "mapa, version" in result.stdout
 
 
 def test_dem2stl__no_input_file_no_demo() -> None:
