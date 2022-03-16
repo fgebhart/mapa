@@ -27,7 +27,6 @@ flake8 = "^4.0.1"
 black = "^22.1.0"
 isort = "^5.10.1"
 pre-commit = "^2.17.0"
-matplotlib = "^3.5.1"       # required for `mapa.utils.show_tiff` debugging function
 
 [tool.poetry.scripts]
 dem2stl = "mapa.cli:dem2stl"

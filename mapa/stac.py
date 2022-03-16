@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import List, Union
+from urllib import request
 
 import click
 import geojson
@@ -7,7 +8,13 @@ from pystac.item import Item
 from pystac_client import Client
 
 from mapa import conf
-from mapa.utils import TMPDIR, download_file
+from mapa.utils import TMPDIR, timing
+
+
+@timing
+def _download_file(url: str, local_file: Path) -> Path:
+    request.urlretrieve(url, local_file)
+    return local_file
 
 
 def _bbox(coord_list):
@@ -30,7 +37,7 @@ def _get_tiff_file(stac_item: Item, allow_caching: bool) -> Path:
         return tiff
     else:
         click.echo(f"{f'🏞  downloading stac item {stac_item.id} ':<50s}", nl=False)
-        return download_file(stac_item.assets["data"].href, tiff)
+        return _download_file(stac_item.assets["data"].href, tiff)
 
 
 def fetch_stac_items_for_bbox(
@@ -46,9 +53,9 @@ def fetch_stac_items_for_bbox(
             click.echo(f"⬇️  fetching {n} stac items...")
             files = []
             for i, item in enumerate(items):
+                files.append(_get_tiff_file(item, allow_caching))
                 if progress_bar:
                     progress_bar.progress(int(100 / n * (i + 1)))
-                files.append(_get_tiff_file(item, allow_caching))
             return files
         else:
             raise ValueError(

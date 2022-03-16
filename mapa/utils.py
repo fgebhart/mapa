@@ -2,11 +2,8 @@ import tempfile
 from functools import wraps
 from pathlib import Path
 from time import time
-from urllib import request
 
 import click
-import rasterio as rio
-from rasterio.plot import show
 
 
 def timing(f):
@@ -24,12 +21,6 @@ def timing(f):
     return wrap
 
 
-@timing
-def download_file(url: str, local_file: Path) -> Path:
-    request.urlretrieve(url, local_file)
-    return local_file
-
-
 def TMPDIR() -> Path:
     tmpdir = Path(tempfile.gettempdir()) / "map2stl"
     if not tmpdir.is_dir():
@@ -43,8 +34,3 @@ def _path_to_merged_tiff(bbox_hash: str) -> Path:
 
 def _path_to_clipped_tiff(bbox_hash: str) -> Path:
     return TMPDIR() / f"clipped_{bbox_hash}.tiff"
-
-
-def show_tiff(path: Path) -> None:
-    tiff = rio.open(path)
-    show((tiff, 1), cmap="terrain")
