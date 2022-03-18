@@ -21,11 +21,11 @@ def test_dem2stl__version() -> None:
     assert "mapa, version" in result.stdout
 
 
-def test_dem2stl__no_input_file_no_demo() -> None:
+def test_dem2stl__no_input_file_no_demo(caplog) -> None:
     cli = CliRunner()
     result = cli.invoke(dem2stl)
     assert result.exit_code == 1, result.stdout
-    assert "💥  Either of --input or --demo is required, try --help." in result.stdout
+    assert "💥  Either of --input or --demo is required, try --help." in caplog.text
     assert "Aborted!" in result.stdout
 
 
@@ -52,23 +52,23 @@ def _md5_sum(path: Path) -> str:
     return hash_md5.hexdigest()
 
 
-def test_dem2stl__binary(test_tiff, tmpdir, test_stl_binary) -> None:
+def test_dem2stl__binary(test_tiff, tmpdir, test_stl_binary, caplog) -> None:
     cli = CliRunner()
     output_file = tmpdir / "output.stl"
     result = cli.invoke(dem2stl, ["--input", str(test_tiff), "--output", output_file])
     assert result.exit_code == 0, result.stdout
-    assert f"successfully generated STL file: {Path(output_file).absolute()}" in result.stdout
+    assert f"successfully generated STL file: {Path(output_file).absolute()}" in caplog.text
     assert Path(output_file).is_file()
 
     assert _dimensions_are_equal(test_stl_binary, output_file)
 
 
-def test_dem2stl__ascii(test_tiff, tmpdir, test_stl_ascii) -> None:
+def test_dem2stl__ascii(test_tiff, tmpdir, test_stl_ascii, caplog) -> None:
     cli = CliRunner()
     output_file = tmpdir / "hawaii_ascii.stl"
     result = cli.invoke(dem2stl, ["--input", str(test_tiff), "--as-ascii", "--output", output_file])
     assert result.exit_code == 0, result.stdout
-    assert f"successfully generated STL file: {Path(output_file).absolute()}" in result.stdout
+    assert f"successfully generated STL file: {Path(output_file).absolute()}" in caplog.text
     assert Path(output_file).is_file()
 
     assert _dimensions_are_equal(test_stl_ascii, output_file)

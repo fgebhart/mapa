@@ -28,7 +28,9 @@ def _bbox(coord_list):
 
 
 def _turn_geojson_into_bbox(geojson_bbox: dict) -> List[float]:
-    poly = geojson.Polygon(geojson_bbox["coordinates"])
+    coordinates = geojson_bbox["coordinates"]
+    log.info(f"bbox of region of interest: {coordinates}")
+    poly = geojson.Polygon(coordinates)
     return _bbox(list(geojson.utils.coords(poly)))
 
 
