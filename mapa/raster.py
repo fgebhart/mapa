@@ -1,7 +1,7 @@
+import logging
 from pathlib import Path
 from typing import List, Tuple
 
-import click
 import numpy as np
 import numpy.typing as npt
 import rasterio as rio
@@ -13,10 +13,12 @@ from rasterio.windows import Window
 
 from mapa.utils import _path_to_clipped_tiff, _path_to_merged_tiff, timing
 
+log = logging.getLogger(__name__)
+
 
 @timing
 def clip_tiff_to_bbox(input_tiff: Path, bbox_geometry: dict, bbox_hash: str) -> Path:
-    click.echo(f"{'🔪  clipping region of interest...':<50s}", nl=False)
+    log.debug("🔪  clipping region of interest...")
     data = rio.open(input_tiff)
     out_img, out_transform = mask(data, shapes=[bbox_geometry], crop=True)
     out_meta = data.meta.copy()

@@ -1,9 +1,10 @@
+import logging
 import tempfile
 from functools import wraps
 from pathlib import Path
 from time import time
 
-import click
+log = logging.getLogger(__name__)
 
 
 def timing(f):
@@ -11,11 +12,11 @@ def timing(f):
     def wrap(*args, **kw):
         ts = time()
         # start_msg = f"{f.__name__} ..."
-        # click.echo(f"{start_msg:<40s}", nl=False)
+        # log.debug(f"{start_msg:<40s}")
         result = f(*args, **kw)
         te = time()
         end_msg = f"✅ ({round(te - ts, 1)}s)"
-        click.echo(f"{end_msg:<20s}")
+        log.debug(end_msg)
         return result
 
     return wrap
