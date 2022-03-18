@@ -1,7 +1,9 @@
+import logging
+import os
+import sys
 from pathlib import Path
 from typing import Union
 
-import click
 import numpy as np
 import rasterio as rio
 
@@ -18,6 +20,10 @@ from mapa.raster import (
 from mapa.stac import fetch_stac_items_for_bbox
 from mapa.stl_file import save_to_stl_file
 from mapa.utils import _path_to_clipped_tiff
+
+log = logging.getLogger(__name__)
+log.setLevel(os.getenv("MAPA_LOG_LEVEL", "INFO"))
+log.addHandler(logging.StreamHandler(sys.stdout))
 
 
 def _verify_input_is_valid(input: str):
@@ -60,21 +66,21 @@ def convert_array_to_stl(
     x, y = array.shape
     if max_res:
         if x * y > conf.PERFORMANCE_WARNING_THRESHOLD:
-            click.echo(
+            log.warning(
                 "⛔️  Warning: Using max_res=True on the given bounding box might consume a lot of time and memory. "
                 "Consider setting max_res=False."
             )
     else:
         bin_fac = round((x / conf.MAXIMUM_RESOLUTION + y / conf.MAXIMUM_RESOLUTION) / 2)
         if bin_fac > 1:
-            click.echo(f"{'🔍  reducing image resolution...':<50s}", nl=False)
+            log.debug("🔍  reducing image resolution...'")
             array = reduce_resolution(array, bin_factor=bin_fac)
 
     triangles = compute_all_triangles(array, model_size, z_offset, z_scale, elevation_scale, cut_to_format_ratio)
-    click.echo(f"{'💾  saving data to stl file...':<50s}", nl=False)
+    log.debug("💾  saving data to stl file...")
 
     output_file = save_to_stl_file(triangles, output_file, as_ascii)
-    click.echo(f"\n🎉  successfully generated STL file: {Path(output_file).absolute()}")
+    log.info(f"🎉  successfully generated STL file: {Path(output_file).absolute()}")
     return Path(output_file)
 
 
@@ -130,7 +136,7 @@ def _get_tiff_for_bbox(
 ) -> Path:
     bbox_hash = get_hash_of_geojson(bbox_geojson)
     if tiff_for_bbox_is_cached(bbox_hash) and allow_caching:
-        click.echo("🚀  using cached tiff...                           ✅ (0.0s)")
+        log.info("🚀  using cached tiff!")
         return _path_to_clipped_tiff(bbox_hash)
     else:
         return _fetch_merge_and_clip_tiffs(
@@ -200,10 +206,10 @@ def convert_bbox_to_stl(
     """
 
     if bbox_geometry is None:
-        click.echo("⛔️  ERROR: make sure to draw a rectangle on the map first!")
+        log.error("⛔️  ERROR: make sure to draw a rectangle on the map first!")
         return
 
-    click.echo("⏳  converting bounding box to STL file... \n")
+    log.info("⏳  converting bounding box to STL file...")
 
     tiff = _get_tiff_for_bbox(bbox_geometry, allow_caching, max_number_of_stac_items, progress_bar)
     output_file = convert_tiff_to_stl(

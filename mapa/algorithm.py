@@ -114,15 +114,17 @@ STL file.
 """
 
 
+import logging
 from typing import Tuple, Union
 
-import click
 import numba as nb
 import numpy as np
 import numpy.typing as npt
 from numpy.lib.stride_tricks import as_strided
 
 from mapa.utils import timing
+
+log = logging.getLogger(__name__)
 
 
 @timing
@@ -350,7 +352,7 @@ def _determine_z_offset(z_offset: float, minimum: float, elevation_scale: float)
         return minimum * elevation_scale
     else:
         if z_offset < 0:
-            click.echo("☝️  Warning: Be careful using negative z_offsets, as it might break your 3D model.")
+            log.warning("☝️  Warning: Be careful using negative z_offsets, as it might break your 3D model.")
         # subtract scaled minimum from z_offset to ensure the input z_offset will remain
         return z_offset - minimum * elevation_scale
 
@@ -366,7 +368,7 @@ def compute_all_triangles(
 
     max_x, max_y = array.shape
 
-    click.echo(f"{'🗺  creating base raster for tiff...':<50s}", nl=False)
+    log.debug("🗺  creating base raster for tiff...")
     raster = _create_raster(array, max_x, max_y)
 
     x_scale, y_scale = _determine_x_y_scales(target_size, max_x, max_y, cut_to_format_ratio)
@@ -374,7 +376,7 @@ def compute_all_triangles(
     combined_z_scale = elevation_scale * z_scale
 
     # compute triangles for 3d surface, sides and bottom
-    click.echo(f"{'⛰  computing triangles of 3d surface...':<50s}", nl=False)
+    log.debug("⛰  computing triangles of 3d surface...")
     dem_triangles = _compute_triangles_of_3d_surface(
         raster=raster,
         array=array,
@@ -385,7 +387,7 @@ def compute_all_triangles(
         z_scale=combined_z_scale,
         z_offset=z_offset,
     )
-    click.echo(f"{'📐  computing triangles of body sides...':<50s}", nl=False)
+    log.debug("📐  computing triangles of body sides...")
     side_triangles = _compute_triangles_of_body_side(
         raster=raster,
         max_x=max_x,

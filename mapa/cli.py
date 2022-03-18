@@ -1,3 +1,4 @@
+import logging
 import subprocess
 from pathlib import Path
 from typing import Union
@@ -5,6 +6,8 @@ from typing import Union
 import click
 
 from mapa import conf, convert_tiff_to_stl
+
+log = logging.getLogger(__name__)
 
 
 @click.command(help="🌍 Convert DEM data into STL files 🌏")
@@ -68,10 +71,10 @@ def dem2stl(
     cut_to_format_ratio: Union[None, float] = None,
 ) -> None:
     if demo is False and input is None:
-        click.echo("💥  Either of --input or --demo is required, try --help.")
+        log.error("💥  Either of --input or --demo is required, try --help.")
         raise click.Abort()
     if demo and input:
-        click.echo("💥  Only one of --input or --demo is allowed, try --help.")
+        log.error("💥  Only one of --input or --demo is allowed, try --help.")
         raise click.Abort()
     if demo:
         input = conf.DEMO_TIFF_PATH
