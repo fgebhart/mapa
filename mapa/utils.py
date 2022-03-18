@@ -22,7 +22,7 @@ def timing(f):
 
 
 def TMPDIR() -> Path:
-    tmpdir = Path(tempfile.gettempdir()) / "map2stl"
+    tmpdir = Path(tempfile.gettempdir()) / "mapa"
     if not tmpdir.is_dir():
         tmpdir.mkdir()
     return tmpdir
