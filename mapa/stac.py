@@ -37,10 +37,10 @@ def _turn_geojson_into_bbox(geojson_bbox: dict) -> List[float]:
 def _get_tiff_file(stac_item: Item, allow_caching: bool) -> Path:
     tiff = TMPDIR() / f"{stac_item.id}.tiff"
     if tiff.is_file() and allow_caching:
-        log.debug(f"🚀  using cached stac item {stac_item.id}")
+        log.info(f"🚀  using cached stac item {stac_item.id}")
         return tiff
     else:
-        log.debug(f"🏞  downloading stac item {stac_item.id}")
+        log.info(f"🏞  downloading stac item {stac_item.id}")
         return _download_file(stac_item.assets["data"].href, tiff)
 
 

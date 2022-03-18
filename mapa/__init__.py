@@ -136,7 +136,7 @@ def _get_tiff_for_bbox(
 ) -> Path:
     bbox_hash = get_hash_of_geojson(bbox_geojson)
     if tiff_for_bbox_is_cached(bbox_hash) and allow_caching:
-        log.debug("🚀  using cached tiff...                           ✅ (0.0s)")
+        log.info("🚀  using cached tiff!")
         return _path_to_clipped_tiff(bbox_hash)
     else:
         return _fetch_merge_and_clip_tiffs(
@@ -209,7 +209,7 @@ def convert_bbox_to_stl(
         log.error("⛔️  ERROR: make sure to draw a rectangle on the map first!")
         return
 
-    log.info("⏳  converting bounding box to STL file... \n")
+    log.info("⏳  converting bounding box to STL file...")
 
     tiff = _get_tiff_for_bbox(bbox_geometry, allow_caching, max_number_of_stac_items, progress_bar)
     output_file = convert_tiff_to_stl(
