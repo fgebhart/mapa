@@ -10,6 +10,7 @@ import rasterio as rio
 from mapa import conf
 from mapa.algorithm import compute_all_triangles, reduce_resolution
 from mapa.caching import get_hash_of_geojson, tiff_for_bbox_is_cached
+from mapa.exceptions import InsufficientInputData
 from mapa.raster import (
     clip_tiff_to_bbox,
     cut_array_to_format,
@@ -73,7 +74,7 @@ def convert_array_to_stl(
     else:
         bin_fac = round((x / conf.MAXIMUM_RESOLUTION + y / conf.MAXIMUM_RESOLUTION) / 2)
         if bin_fac > 1:
-            log.debug("🔍  reducing image resolution...'")
+            log.debug("🔍  reducing image resolution...")
             array = reduce_resolution(array, bin_factor=bin_fac)
 
     triangles = compute_all_triangles(array, model_size, z_offset, z_scale, elevation_scale, cut_to_format_ratio)
@@ -102,6 +103,13 @@ def convert_tiff_to_stl(
     tiff = rio.open(input_file)
     elevation_scale = determine_elevation_scale(tiff, model_size)
     array = tiff.read()
+
+    # fail early in case the input array consists of one element only
+    if array.size <= 1:
+        raise InsufficientInputData(
+            "Input data contains too little data, array has only one entry. "
+            "Ensure to provide more data for a proper STL file generation."
+        )
 
     return convert_array_to_stl(
         array=array,

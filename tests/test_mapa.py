@@ -5,6 +5,7 @@ import rasterio as rio
 
 from mapa import _fetch_merge_and_clip_tiffs, _get_tiff_for_bbox, convert_bbox_to_stl
 from mapa.caching import get_hash_of_geojson
+from mapa.exceptions import InsufficientInputData, MaximalNumberOfSTACItemsExceeded
 from mapa.stac import _turn_geojson_into_bbox
 from mapa.stl_file import get_dimensions_of_stl_file
 from mapa.utils import _path_to_clipped_tiff, _path_to_merged_tiff
@@ -153,7 +154,7 @@ def test_convert_bbox_to_stl__max_number_of_stac_items(
     # fetching 1 stac item for geojson with max number of 0 will raise exception
     max_number_of_stac_items = 0
     with pytest.raises(
-        ValueError,
+        MaximalNumberOfSTACItemsExceeded,
         match=f"Given area of input geometry exceeds the maximal number of stac items \\({max_number_of_stac_items}\\)",
     ):
         convert_bbox_to_stl(
@@ -166,7 +167,7 @@ def test_convert_bbox_to_stl__max_number_of_stac_items(
     # fetching 2 stac item for geojson with max number of 1 will raise exception
     max_number_of_stac_items = 1
     with pytest.raises(
-        ValueError,
+        MaximalNumberOfSTACItemsExceeded,
         match=f"Given area of input geometry exceeds the maximal number of stac items \\({max_number_of_stac_items}\\)",
     ):
         convert_bbox_to_stl(
@@ -203,3 +204,30 @@ def test_convert_bbox_to_stl__progress_bar(output_file, geojson_bbox_two_stac_it
         progress_bar=progress_bar,
     )
     assert progress_bar.progress_track == [50, 100]
+
+
+def test_mapa__index_error(output_file) -> None:
+    # chose a very tiny area, which in turn will create a very tiny array, i.e. array with one element only
+    bbox = {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [6.164654, 45.89936],
+                [6.164654, 45.899404],
+                [6.164713, 45.899404],
+                [6.164713, 45.89936],
+                [6.164654, 45.89936],
+            ]
+        ],
+    }
+    with pytest.raises(
+        InsufficientInputData,
+        match=(
+            "Input data contains too little data, array has only one entry. "
+            "Ensure to provide more data for a proper STL file generation."
+        ),
+    ):
+        convert_bbox_to_stl(
+            bbox_geometry=bbox,
+            output_file=output_file,
+        )
