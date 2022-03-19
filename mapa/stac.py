@@ -8,6 +8,7 @@ from pystac.item import Item
 from pystac_client import Client
 
 from mapa import conf
+from mapa.exceptions import MaximalNumberOfSTACItemsExceeded, NoSTACItemFound
 from mapa.utils import TMPDIR, timing
 
 log = logging.getLogger(__name__)
@@ -62,8 +63,8 @@ def fetch_stac_items_for_bbox(
                     progress_bar.progress(int(100 / n * (i + 1)))
             return files
         else:
-            raise ValueError(
+            raise MaximalNumberOfSTACItemsExceeded(
                 f"Given area of input geometry exceeds the maximal number of stac items ({max_number_of_stac_items})"
             )
     else:
-        raise ValueError("Could not find the desired STAC item for the given bounding box.")
+        raise NoSTACItemFound("Could not find the desired STAC item for the given bounding box.")
