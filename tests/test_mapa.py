@@ -1,11 +1,9 @@
 import math
 
-import pytest
 import rasterio as rio
 
 from mapa import _fetch_merge_and_clip_tiffs, _get_tiff_for_bbox, convert_bbox_to_stl
 from mapa.caching import get_hash_of_geojson
-from mapa.exceptions import MaximalNumberOfSTACItemsExceeded
 from mapa.stac import _turn_geojson_into_bbox
 from mapa.stl_file import get_dimensions_of_stl_file
 from mapa.utils import _path_to_clipped_tiff, _path_to_merged_tiff
@@ -87,16 +85,14 @@ def test_convert_bbox_to_stl__verify_x_y_dimensions(mock_file_download, output_f
 
 
 def test__get_tiff_for_bbox(mock_file_download, hawaii_bbox) -> None:
-    tiff = _get_tiff_for_bbox(hawaii_bbox, allow_caching=False, max_number_of_stac_items=-1)
+    tiff = _get_tiff_for_bbox(hawaii_bbox, allow_caching=False)
     assert tiff.is_file()
 
 
 def test__fetch_merge_and_clip_tiffs(geojson_bbox_two_stac_items) -> None:
     bbox_hash = get_hash_of_geojson(geojson_bbox_two_stac_items)
     assert isinstance(bbox_hash, str)
-    tiff = _fetch_merge_and_clip_tiffs(
-        geojson_bbox_two_stac_items, bbox_hash, allow_caching=True, max_number_of_stac_items=-1
-    )
+    tiff = _fetch_merge_and_clip_tiffs(geojson_bbox_two_stac_items, bbox_hash, allow_caching=True)
     assert tiff.is_file()
     assert _path_to_merged_tiff(bbox_hash).is_file()
     assert _path_to_clipped_tiff(bbox_hash).is_file()
@@ -142,58 +138,6 @@ def test_convert_bbox_to_stl__ensure_z_offset_is_correct(mock_file_download, out
     assert x1 == x2 == x3
     assert y1 == y2 == y3
     assert z1 > z2 > z3
-
-
-def test_convert_bbox_to_stl__max_number_of_stac_items(
-    mock_file_download, output_file, geojson_bbox, geojson_bbox_two_stac_items, hawaii_bbox
-) -> None:
-    # note, caching is turned off for these test, since caching would still be allowed even if num of stac items
-    # would exceed the configured max_number_of_stac_items
-    caching = False
-
-    # fetching 1 stac item for geojson with max number of 0 will raise exception
-    max_number_of_stac_items = 0
-    with pytest.raises(
-        MaximalNumberOfSTACItemsExceeded,
-        match=f"Given area of input geometry exceeds the maximal number of stac items \\({max_number_of_stac_items}\\)",
-    ):
-        convert_bbox_to_stl(
-            bbox_geometry=hawaii_bbox,
-            output_file=output_file,
-            allow_caching=caching,
-            max_number_of_stac_items=max_number_of_stac_items,
-        )
-
-    # fetching 2 stac item for geojson with max number of 1 will raise exception
-    max_number_of_stac_items = 1
-    with pytest.raises(
-        MaximalNumberOfSTACItemsExceeded,
-        match=f"Given area of input geometry exceeds the maximal number of stac items \\({max_number_of_stac_items}\\)",
-    ):
-        convert_bbox_to_stl(
-            bbox_geometry=geojson_bbox_two_stac_items,
-            output_file=output_file,
-            allow_caching=caching,
-            max_number_of_stac_items=max_number_of_stac_items,
-        )
-
-    # fetching 1 stac item for geojson with max number of -1 will pass
-    max_number_of_stac_items = -1
-    convert_bbox_to_stl(
-        bbox_geometry=hawaii_bbox,
-        output_file=output_file,
-        allow_caching=caching,
-        max_number_of_stac_items=max_number_of_stac_items,
-    )
-
-    # fetching 1 stac item for geojson with max number of -999 (any negative number basically) will pass
-    max_number_of_stac_items = -999
-    convert_bbox_to_stl(
-        bbox_geometry=hawaii_bbox,
-        output_file=output_file,
-        allow_caching=caching,
-        max_number_of_stac_items=max_number_of_stac_items,
-    )
 
 
 def test_convert_bbox_to_stl__progress_bar(output_file, geojson_bbox_two_stac_items, progress_bar) -> None:
