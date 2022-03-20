@@ -5,7 +5,7 @@ import rasterio as rio
 
 from mapa import _fetch_merge_and_clip_tiffs, _get_tiff_for_bbox, convert_bbox_to_stl
 from mapa.caching import get_hash_of_geojson
-from mapa.exceptions import InsufficientInputData, MaximalNumberOfSTACItemsExceeded
+from mapa.exceptions import MaximalNumberOfSTACItemsExceeded
 from mapa.stac import _turn_geojson_into_bbox
 from mapa.stl_file import get_dimensions_of_stl_file
 from mapa.utils import _path_to_clipped_tiff, _path_to_merged_tiff
@@ -220,14 +220,10 @@ def test_mapa__index_error(output_file) -> None:
             ]
         ],
     }
-    with pytest.raises(
-        InsufficientInputData,
-        match=(
-            "Input data contains too little data, array has only one entry. "
-            "Ensure to provide more data for a proper STL file generation."
-        ),
-    ):
-        convert_bbox_to_stl(
-            bbox_geometry=bbox,
-            output_file=output_file,
-        )
+    # converting such a bbox into an STL caused an index error when trying to drop first/last row/col, but the fix to
+    # this avoids dropping rows and cols in case there are not sufficient rows/cols. Thus the computing such a STL should
+    # work out of the box, even thouhgt a STL with only one elevation data point is of course questionable.
+    convert_bbox_to_stl(
+        bbox_geometry=bbox,
+        output_file=output_file,
+    )

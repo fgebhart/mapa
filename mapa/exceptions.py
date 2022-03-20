@@ -1,7 +1,3 @@
-class InsufficientInputData(Exception):
-    pass
-
-
 class MaximalNumberOfSTACItemsExceeded(Exception):
     pass
 
