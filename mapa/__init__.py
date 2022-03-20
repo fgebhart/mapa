@@ -10,7 +10,6 @@ import rasterio as rio
 from mapa import conf
 from mapa.algorithm import compute_all_triangles, reduce_resolution
 from mapa.caching import get_hash_of_geojson, tiff_for_bbox_is_cached
-from mapa.exceptions import InsufficientInputData
 from mapa.raster import (
     clip_tiff_to_bbox,
     cut_array_to_format,
@@ -60,11 +59,13 @@ def convert_array_to_stl(
 ) -> Path:
     # drop higher dimension to get 2-dimensional (x * y) array
     array = array[0, :, :]
-    array = remove_empty_first_and_last_rows_and_cols(array)
+    x, y = array.shape
+    # when merging tiffs, sometimes an empty row/col is added, which should be dropped (in case the array size suffices)
+    if x > 1 and y > 1:
+        array = remove_empty_first_and_last_rows_and_cols(array)
     if cut_to_format_ratio:
         array = cut_array_to_format(array, cut_to_format_ratio)
 
-    x, y = array.shape
     if max_res:
         if x * y > conf.PERFORMANCE_WARNING_THRESHOLD:
             log.warning(
@@ -103,13 +104,6 @@ def convert_tiff_to_stl(
     tiff = rio.open(input_file)
     elevation_scale = determine_elevation_scale(tiff, model_size)
     array = tiff.read()
-
-    # fail early in case the input array consists of one element only
-    if array.size <= 1:
-        raise InsufficientInputData(
-            "Input data contains too little data, array has only one entry. "
-            "Ensure to provide more data for a proper STL file generation."
-        )
 
     return convert_array_to_stl(
         array=array,
