@@ -11,12 +11,11 @@ from rasterio.mask import mask
 from rasterio.merge import merge
 from rasterio.windows import Window
 
-from mapa.utils import _path_to_clipped_tiff, _path_to_merged_tiff, timing
+from mapa.utils import _path_to_clipped_tiff, _path_to_merged_tiff
 
 log = logging.getLogger(__name__)
 
 
-@timing
 def clip_tiff_to_bbox(input_tiff: Path, bbox_geometry: dict, bbox_hash: str) -> Path:
     log.debug("🔪  clipping region of interest...")
     data = rio.open(input_tiff)
