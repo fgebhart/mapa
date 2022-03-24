@@ -122,12 +122,9 @@ import numpy as np
 import numpy.typing as npt
 from numpy.lib.stride_tricks import as_strided
 
-from mapa.utils import timing
-
 log = logging.getLogger(__name__)
 
 
-@timing
 @nb.njit(fastmath=True, cache=True)
 def _create_raster(array: npt.ArrayLike, max_x: int, max_y: int) -> np.ndarray:
     max_x, max_y = array.shape
@@ -151,7 +148,6 @@ def _create_raster(array: npt.ArrayLike, max_x: int, max_y: int) -> np.ndarray:
     return raster
 
 
-@timing
 @nb.njit(fastmath=True, cache=True)
 def _compute_triangles_of_3d_surface(
     raster: npt.ArrayLike,
@@ -228,7 +224,6 @@ def _compute_triangles_of_3d_surface(
     return triangles.reshape((max_x * max_y * 4, 3, 3))
 
 
-@timing
 def _compute_triangles_of_body_side(
     raster: npt.ArrayLike, max_x: int, max_y: int, x_scale: float, y_scale: float, z_scale: float, z_offset: float
 ) -> np.ndarray:
@@ -401,7 +396,6 @@ def compute_all_triangles(
     return np.vstack((dem_triangles, side_triangles, bottom_triangles))
 
 
-@timing
 def reduce_resolution(array: npt.ArrayLike, bin_factor: int) -> np.ndarray:
     strided = as_strided(
         array,

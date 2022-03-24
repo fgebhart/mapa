@@ -1,6 +1,5 @@
 import logging
 import os
-import sys
 from pathlib import Path
 from typing import Union
 
@@ -22,8 +21,7 @@ from mapa.stl_file import save_to_stl_file
 from mapa.utils import _path_to_clipped_tiff
 
 log = logging.getLogger(__name__)
-log.setLevel(os.getenv("MAPA_LOG_LEVEL", "INFO"))
-log.addHandler(logging.StreamHandler(sys.stdout))
+logging.basicConfig(level=os.getenv("MAPA_LOG_LEVEL", "INFO"))
 
 
 def _verify_input_is_valid(input: str):
@@ -82,7 +80,7 @@ def convert_array_to_stl(
     log.debug("💾  saving data to stl file...")
 
     output_file = save_to_stl_file(triangles, output_file, as_ascii)
-    log.info(f"🎉  successfully generated STL file: {Path(output_file).absolute()}")
+    log.info(f"🎉  successfully generated STL file: {Path(output_file).absolute()}\n")
     return Path(output_file)
 
 
@@ -96,6 +94,7 @@ def convert_tiff_to_stl(
     z_scale: float,
     cut_to_format_ratio: Union[None, float],
 ) -> Path:
+
     _verify_input_is_valid(input_file)
     if output_file is None:
         output_file = Path.home() / str(Path(input_file).name).replace(".tiff", ".stl").replace(".tif", ".stl")
@@ -200,8 +199,7 @@ def convert_bbox_to_stl(
         log.error("⛔️  ERROR: make sure to draw a rectangle on the map first!")
         return
 
-    log.info("⏳  converting bounding box to STL file...")
-
+    log.info(f"⏳  converting bounding box to STL file with arguments: {locals()}")
     tiff = _get_tiff_for_bbox(bbox_geometry, allow_caching, progress_bar)
     output_file = convert_tiff_to_stl(
         input_file=tiff,

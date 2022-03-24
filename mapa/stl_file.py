@@ -4,10 +4,7 @@ from typing import Tuple
 import numpy as np
 from stl import Dimension, Mode, mesh
 
-from mapa.utils import timing
 
-
-@timing
 def save_to_stl_file(triangles: np.ndarray, output_file: str, as_ascii: bool) -> str:
     stl = mesh.Mesh(np.zeros(triangles.shape[0], dtype=mesh.Mesh.dtype))
     stl.vectors = triangles

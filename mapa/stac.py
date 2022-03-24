@@ -9,12 +9,11 @@ from pystac_client import Client
 
 from mapa import conf
 from mapa.exceptions import NoSTACItemFound
-from mapa.utils import TMPDIR, timing
+from mapa.utils import TMPDIR
 
 log = logging.getLogger(__name__)
 
 
-@timing
 def _download_file(url: str, local_file: Path) -> Path:
     request.urlretrieve(url, local_file)
     return local_file
@@ -30,9 +29,7 @@ def _bbox(coord_list):
 
 def _turn_geojson_into_bbox(geojson_bbox: dict) -> List[float]:
     coordinates = geojson_bbox["coordinates"]
-    log.info(f"bbox of region of interest: {coordinates}")
-    poly = geojson.Polygon(coordinates)
-    return _bbox(list(geojson.utils.coords(poly)))
+    return _bbox(list(geojson.utils.coords(geojson.Polygon(coordinates))))
 
 
 def _get_tiff_file(stac_item: Item, allow_caching: bool) -> Path:
