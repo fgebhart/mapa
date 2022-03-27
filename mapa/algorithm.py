@@ -159,7 +159,7 @@ def _compute_triangles_of_3d_surface(
     z_scale: float,
     z_offset: float,
 ) -> np.ndarray:
-    triangles = np.full((max_x, max_y, 4, 3, 3), -1.0)
+    triangles = np.full((max_x, max_y, 4, 3, 3), -1.0, dtype=np.float64)
     for ix in range(0, max_x):
         for iy in range(0, max_y):
             if ix > max_x or iy > max_y:
@@ -228,85 +228,123 @@ def _compute_triangles_of_body_side(
     raster: npt.ArrayLike, max_x: int, max_y: int, x_scale: float, y_scale: float, z_scale: float, z_offset: float
 ) -> np.ndarray:
     # loop over raster and build triangles when in first and last col and row
-    triangles = []
-    for ix, row in enumerate(raster):
-        if ix >= max_x:
-            continue
-        for iy, _ in enumerate(row):
-            if iy >= max_y:
-                continue
+    triangles = np.full((max_x * 4 + max_y * 4, 3, 3), -1.0, dtype=np.float64)
+    cnt = 0
+
+    for ix in range(0, max_x):
+        for iy in range(0, max_y):
             if ix == 0:  # first row
-                triangles.append(  # triangle with two points at top of mesh
-                    [
-                        [0, iy * y_scale, raster[ix][iy] * z_scale + z_offset],  # first point in col
-                        [0, (iy + 1) * y_scale, raster[ix][iy + 1] * z_scale + z_offset],  # second point in col
-                        [0, iy * y_scale, 0],  # first point on ground
-                    ]
-                )
-                triangles.append(  # triangle with two points at ground
-                    [
-                        [0, iy * y_scale, 0],
-                        [0, (iy + 1) * y_scale, raster[ix][iy + 1] * z_scale + z_offset],
-                        [0, (iy + 1) * y_scale, 0],
-                    ]
-                )
+                # triangle with two points at top of mesh
+                # first vertex
+                triangles[cnt + 0, 0, 0] = 0
+                triangles[cnt + 0, 0, 1] = iy * y_scale
+                triangles[cnt + 0, 0, 2] = raster[ix][iy] * z_scale + z_offset
+                # second vertex
+                triangles[cnt + 0, 1, 0] = 0
+                triangles[cnt + 0, 1, 1] = (iy + 1) * y_scale
+                triangles[cnt + 0, 1, 2] = raster[ix][iy + 1] * z_scale + z_offset
+                # third vertex
+                triangles[cnt + 0, 2, 0] = 0
+                triangles[cnt + 0, 2, 1] = iy * y_scale
+                triangles[cnt + 0, 2, 2] = 0
+                # triangle with two points at ground
+                # first vertex
+                triangles[cnt + 1, 0, 0] = 0
+                triangles[cnt + 1, 0, 1] = iy * y_scale
+                triangles[cnt + 1, 0, 2] = 0
+                # second vertex
+                triangles[cnt + 1, 1, 0] = 0
+                triangles[cnt + 1, 1, 1] = (iy + 1) * y_scale
+                triangles[cnt + 1, 1, 2] = raster[ix][iy + 1] * z_scale + z_offset
+                # third vertex
+                triangles[cnt + 1, 2, 0] = 0
+                triangles[cnt + 1, 2, 1] = (iy + 1) * y_scale
+                triangles[cnt + 1, 2, 2] = 0
+                cnt += 2
             if ix == max_x - 1:  # last row
-                triangles.append(  # two points at top 3d mesh
-                    [
-                        [
-                            max_x * x_scale,
-                            (iy + 1) * y_scale,
-                            raster[ix][iy + 1] * z_scale + z_offset,
-                        ],  # second point in col
-                        [max_x * x_scale, iy * y_scale, raster[ix][iy] * z_scale + z_offset],  # first point in col
-                        [max_x * x_scale, iy * y_scale, 0],  # first point on ground
-                    ]
-                )
-                triangles.append(  # two points at ground
-                    [
-                        [max_x * x_scale, (iy + 1) * y_scale, raster[ix][iy + 1] * z_scale + z_offset],
-                        [max_x * x_scale, iy * y_scale, 0],
-                        [max_x * x_scale, (iy + 1) * y_scale, 0],
-                    ]
-                )
+                # two points at top 3d mesh
+                # first vertex
+                triangles[cnt + 0, 0, 0] = max_x * x_scale
+                triangles[cnt + 0, 0, 1] = (iy + 1) * y_scale
+                triangles[cnt + 0, 0, 2] = raster[ix + 1][iy + 1] * z_scale + z_offset
+                # second vertex
+                triangles[cnt + 0, 1, 0] = max_x * x_scale
+                triangles[cnt + 0, 1, 1] = iy * y_scale
+                triangles[cnt + 0, 1, 2] = raster[ix + 1][iy] * z_scale + z_offset
+                # third vertex
+                triangles[cnt + 0, 2, 0] = max_x * x_scale
+                triangles[cnt + 0, 2, 1] = iy * y_scale
+                triangles[cnt + 0, 2, 2] = 0
+                # two points at ground
+                # first vertex
+                triangles[cnt + 1, 0, 0] = max_x * x_scale
+                triangles[cnt + 1, 0, 1] = (iy + 1) * y_scale
+                triangles[cnt + 1, 0, 2] = raster[ix + 1][iy + 1] * z_scale + z_offset
+                # second vertex
+                triangles[cnt + 1, 1, 0] = max_x * x_scale
+                triangles[cnt + 1, 1, 1] = iy * y_scale
+                triangles[cnt + 1, 1, 2] = 0
+                # third vertex
+                triangles[cnt + 1, 2, 0] = max_x * x_scale
+                triangles[cnt + 1, 2, 1] = (iy + 1) * y_scale
+                triangles[cnt + 1, 2, 2] = 0
+                cnt += 2
             if iy == 0:  # first col
                 # two points at top 3d mesh
-                triangles.append(
-                    [
-                        [(ix + 1) * x_scale, 0, raster[ix + 1][iy] * z_scale + z_offset],  # second point in col
-                        [ix * x_scale, 0, raster[ix][iy] * z_scale + z_offset],  # first point in col
-                        [ix * x_scale, 0, 0],  # first point on ground
-                    ]
-                )
+                # first vertex
+                triangles[cnt + 0, 0, 0] = (ix + 1) * x_scale
+                triangles[cnt + 0, 0, 1] = 0
+                triangles[cnt + 0, 0, 2] = raster[ix + 1][iy] * z_scale + z_offset
+                # second vertex
+                triangles[cnt + 0, 1, 0] = ix * x_scale
+                triangles[cnt + 0, 1, 1] = 0
+                triangles[cnt + 0, 1, 2] = raster[ix][iy] * z_scale + z_offset
+                # third vertex
+                triangles[cnt + 0, 2, 0] = ix * x_scale
+                triangles[cnt + 0, 2, 1] = 0
+                triangles[cnt + 0, 2, 2] = 0
                 # two points at ground
-                triangles.append(
-                    [
-                        [(ix + 1) * x_scale, 0, raster[ix + 1][iy] * z_scale + z_offset],
-                        [ix * x_scale, 0, 0],
-                        [(ix + 1) * x_scale, 0, 0],
-                    ]
-                )
+                # first vertex
+                triangles[cnt + 1, 0, 0] = (ix + 1) * x_scale
+                triangles[cnt + 1, 0, 1] = 0
+                triangles[cnt + 1, 0, 2] = raster[ix + 1][iy] * z_scale + z_offset
+                # second vertex
+                triangles[cnt + 1, 1, 0] = ix * x_scale
+                triangles[cnt + 1, 1, 1] = 0
+                triangles[cnt + 1, 1, 2] = 0
+                # third vertex
+                triangles[cnt + 1, 2, 0] = (ix + 1) * x_scale
+                triangles[cnt + 1, 2, 1] = 0
+                triangles[cnt + 1, 2, 2] = 0
+                cnt += 2
             if iy == max_y - 1:  # last col
                 # two points at top 3d mesh
-                triangles.append(
-                    [
-                        [ix * x_scale, max_y * y_scale, raster[ix][iy] * z_scale + z_offset],  # first point in col
-                        [
-                            (ix + 1) * x_scale,
-                            max_y * y_scale,
-                            raster[ix + 1][iy] * z_scale + z_offset,
-                        ],  # second point in col
-                        [ix * x_scale, max_y * y_scale, 0],  # first point on ground
-                    ]
-                )
+                # first vertex
+                triangles[cnt + 0, 0, 0] = ix * x_scale
+                triangles[cnt + 0, 0, 1] = max_y * y_scale
+                triangles[cnt + 0, 0, 2] = raster[ix][iy + 1] * z_scale + z_offset
+                # second vertex
+                triangles[cnt + 0, 1, 0] = (ix + 1) * x_scale
+                triangles[cnt + 0, 1, 1] = max_y * y_scale
+                triangles[cnt + 0, 1, 2] = raster[ix + 1][iy + 1] * z_scale + z_offset
+                # third vertex
+                triangles[cnt + 0, 2, 0] = ix * x_scale
+                triangles[cnt + 0, 2, 1] = max_y * y_scale
+                triangles[cnt + 0, 2, 2] = 0
                 # two points at ground
-                triangles.append(
-                    [
-                        [ix * x_scale, max_y * y_scale, 0],
-                        [(ix + 1) * x_scale, max_y * y_scale, raster[ix + 1][iy] * z_scale + z_offset],
-                        [(ix + 1) * x_scale, max_y * y_scale, 0],
-                    ]
-                )
+                # first vertex
+                triangles[cnt + 1, 0, 0] = ix * x_scale
+                triangles[cnt + 1, 0, 1] = max_y * y_scale
+                triangles[cnt + 1, 0, 2] = 0
+                # second vertex
+                triangles[cnt + 1, 1, 0] = (ix + 1) * x_scale
+                triangles[cnt + 1, 1, 1] = max_y * y_scale
+                triangles[cnt + 1, 1, 2] = raster[ix + 1][iy + 1] * z_scale + z_offset
+                # third vertex
+                triangles[cnt + 1, 2, 0] = (ix + 1) * x_scale
+                triangles[cnt + 1, 2, 1] = max_y * y_scale
+                triangles[cnt + 1, 2, 2] = 0
+                cnt += 2
     return triangles
 
 

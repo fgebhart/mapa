@@ -21,7 +21,8 @@ from mapa.stl_file import save_to_stl_file
 from mapa.utils import _path_to_clipped_tiff
 
 log = logging.getLogger(__name__)
-logging.basicConfig(level=os.getenv("MAPA_LOG_LEVEL", "INFO"))
+logging.basicConfig()
+log.setLevel(os.getenv("MAPA_LOG_LEVEL", "INFO"))
 
 
 def _verify_input_is_valid(input: str):
