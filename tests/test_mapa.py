@@ -1,8 +1,10 @@
 import math
 
+import numpy as np
 import rasterio as rio
+from stl import mesh
 
-from mapa import _fetch_merge_and_clip_tiffs, _get_tiff_for_bbox, convert_bbox_to_stl
+from mapa import _fetch_merge_and_clip_tiffs, _get_tiff_for_bbox, convert_array_to_stl, convert_bbox_to_stl
 from mapa.caching import get_hash_of_geojson
 from mapa.stac import _turn_geojson_into_bbox
 from mapa.stl_file import get_dimensions_of_stl_file
@@ -16,6 +18,8 @@ def test_create_stl_for_bbox__success(mock_file_download, output_file, hawaii_bb
         allow_caching=False,
     )
     assert output_file.is_file()
+    # stl_body = mesh.Mesh.from_file(output_file)
+    # assert stl_body.is_closed()
 
 
 def test_create_stl_for_bbox__z_scale_from_geotiff(mock_file_download, hawaii_bbox, output_file):
@@ -171,3 +175,27 @@ def test_mapa__index_error(output_file) -> None:
         bbox_geometry=bbox,
         output_file=output_file,
     )
+
+
+def test_mapa__side_and_bottom_are_connected(output_file) -> None:
+    array = np.array(
+        [
+            [
+                [0, 1],
+                [3, 4],
+            ]
+        ]
+    )
+    stl = convert_array_to_stl(
+        array=array,
+        as_ascii=False,
+        model_size=100,
+        max_res=True,
+        z_offset=2.0,
+        z_scale=2.0,
+        cut_to_format_ratio=1.0,
+        elevation_scale=1.0,
+        output_file=output_file,
+    )
+    stl_body = mesh.Mesh.from_file(stl)
+    assert stl_body.is_closed()

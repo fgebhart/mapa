@@ -348,25 +348,6 @@ def _compute_triangles_of_body_side(
     return triangles
 
 
-def _compute_triangles_of_bottom(max_x: int, max_y: int, x_scale: float, y_scale: float) -> np.ndarray:
-    triangles = []
-    triangles.append(
-        [
-            [0, 0, 0],
-            [0, max_y * y_scale, 0],
-            [max_x * x_scale, 0, 0],
-        ]
-    )
-    triangles.append(
-        [
-            [0, max_y * y_scale, 0],
-            [max_x * x_scale, max_y * y_scale, 0],
-            [max_x * x_scale, 0, 0],
-        ]
-    )
-    return triangles
-
-
 def _determine_x_y_scales(target_size: int, max_x: int, max_y: int, cut_to_format_ratio: float) -> Tuple[float, float]:
     x_scale = target_size / max_x
     if cut_to_format_ratio:
@@ -430,7 +411,12 @@ def compute_all_triangles(
         z_scale=combined_z_scale,
         z_offset=z_offset,
     )
-    bottom_triangles = _compute_triangles_of_bottom(max_x=max_x, max_y=max_y, x_scale=x_scale, y_scale=y_scale)
+    bottom_triangles = dem_triangles.copy()
+    # set z coordinates all to zero
+    bottom_triangles[:, :, 2] = 0
+    # flip order of elements horizontally to flip facet normals
+    bottom_triangles = np.fliplr(bottom_triangles)
+
     return np.vstack((dem_triangles, side_triangles, bottom_triangles))
 
 
