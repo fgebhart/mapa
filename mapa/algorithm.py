@@ -115,6 +115,7 @@ STL file.
 
 
 import logging
+from dataclasses import dataclass
 from typing import Tuple, Union
 
 import numba as nb
@@ -348,23 +349,117 @@ def _compute_triangles_of_body_side(
     return triangles
 
 
-def _compute_triangles_of_bottom(max_x: int, max_y: int, x_scale: float, y_scale: float) -> np.ndarray:
-    triangles = []
-    triangles.append(
-        [
-            [0, 0, 0],
-            [0, max_y * y_scale, 0],
-            [max_x * x_scale, 0, 0],
-        ]
-    )
-    triangles.append(
-        [
-            [0, max_y * y_scale, 0],
-            [max_x * x_scale, max_y * y_scale, 0],
-            [max_x * x_scale, 0, 0],
-        ]
-    )
+# def _compute_triangles_of_bottom__old(max_x: int, max_y: int, x_scale: float, y_scale: float) -> np.ndarray:
+#     triangles = []
+#     triangles.append(
+#         [
+#             [0, 0, 0],
+#             [0, max_y * y_scale, 0],
+#             [max_x * x_scale, 0, 0],
+#         ]
+#     )
+#     triangles.append(
+#         [
+#             [0, max_y * y_scale, 0],
+#             [max_x * x_scale, max_y * y_scale, 0],
+#             [max_x * x_scale, 0, 0],
+#         ]
+#     )
+#     return triangles
+
+
+@dataclass
+class BottomTriangle:
+    x1: int
+    y1: int
+    x2: int
+    y2: int
+    x3: int
+    y3: int
+
+
+def _get_value(cnt: int, value: int) -> int:
+    if value == -1:
+        return cnt
+    elif value == -2:
+        return cnt + 1
+    else:
+        return value
+
+
+def _compute_triangles_for_one_side_of_bottom(
+    length: int, side_range: range, triangle: BottomTriangle, x_scale: float, y_scale: float
+) -> np.ndarray:
+    triangles = np.full((length - 1, 3, 3), -1.0, dtype=np.float64)
+    for i, cnt in enumerate(side_range):
+        triangles[i, 0, 0] = _get_value(cnt, triangle.x1) * x_scale
+        triangles[i, 0, 1] = _get_value(cnt, triangle.y1) * y_scale
+        triangles[i, 0, 2] = 0
+
+        triangles[i, 1, 0] = _get_value(cnt, triangle.x2) * x_scale
+        triangles[i, 1, 1] = _get_value(cnt, triangle.y2) * y_scale
+        triangles[i, 1, 2] = 0
+
+        triangles[i, 2, 0] = _get_value(cnt, triangle.x3) * x_scale
+        triangles[i, 2, 1] = _get_value(cnt, triangle.y3) * y_scale
+        triangles[i, 2, 2] = 0
+
     return triangles
+
+
+def _get_center_triangles_for_bottom(
+    left_triangle: BottomTriangle, right_triangle: BottomTriangle, x_scale: float, y_scale: float
+) -> np.ndarray:
+    triangles = np.full((2, 3, 3), -1.0, dtype=np.float64)
+    triangles[0, 0, 0] = left_triangle.x1 * x_scale
+    triangles[0, 0, 1] = left_triangle.y1 * y_scale
+    triangles[0, 0, 2] = 0
+    triangles[0, 1, 0] = left_triangle.x2 * x_scale
+    triangles[0, 1, 1] = left_triangle.y2 * y_scale
+    triangles[0, 1, 2] = 0
+    triangles[0, 2, 0] = left_triangle.x3 * x_scale
+    triangles[0, 2, 1] = left_triangle.y3 * y_scale
+    triangles[0, 2, 2] = 0
+
+    triangles[1, 0, 0] = right_triangle.x1 * x_scale
+    triangles[1, 0, 1] = right_triangle.y1 * y_scale
+    triangles[1, 0, 2] = 0
+    triangles[1, 1, 0] = right_triangle.x2 * x_scale
+    triangles[1, 1, 1] = right_triangle.y2 * y_scale
+    triangles[1, 1, 2] = 0
+    triangles[1, 2, 0] = right_triangle.x3 * x_scale
+    triangles[1, 2, 1] = right_triangle.y3 * y_scale
+    triangles[1, 2, 2] = 0
+
+    return triangles
+
+
+def _compute_triangles_of_bottom(max_x: int, max_y: int, x_scale: float, y_scale: float) -> np.ndarray:
+    t_first_row = BottomTriangle(x1=-1, y1=0, x2=-2, y2=0, x3=0, y3=1)
+    first_row_triangles = _compute_triangles_for_one_side_of_bottom(
+        max_x, range(0, max_x - 1), t_first_row, x_scale, y_scale
+    )
+
+    t_first_col = BottomTriangle(x1=0, y1=-1, x2=0, y2=-2, x3=1, y3=max_y)
+    first_col_triangles = _compute_triangles_for_one_side_of_bottom(
+        max_y, range(1, max_y), t_first_col, x_scale, y_scale
+    )
+
+    t_last_row = BottomTriangle(x1=-1, y1=max_y, x2=-2, y2=max_y, x3=max_x, y3=max_y - 1)
+    last_row_triangles = _compute_triangles_for_one_side_of_bottom(max_x, range(1, max_x), t_last_row, x_scale, y_scale)
+
+    t_last_col = BottomTriangle(x1=max_x, y1=-1, x2=max_x, y2=-2, x3=max_x - 1, y3=0)
+    last_col_triangles = _compute_triangles_for_one_side_of_bottom(
+        max_y, range(0, max_y - 1), t_last_col, x_scale, y_scale
+    )
+
+    left_triangle = BottomTriangle(x1=max_x - 1, y1=0, x2=max_x, y2=max_y - 1, x3=1, y3=max_y)
+    right_triangle = BottomTriangle(x1=1, y1=max_y, x2=0, y2=1, x3=max_x - 1, y3=0)
+    bottom_center_triangles = _get_center_triangles_for_bottom(left_triangle, right_triangle, x_scale, y_scale)
+
+    return np.vstack(
+        (last_row_triangles, first_row_triangles, first_col_triangles, last_col_triangles, bottom_center_triangles)
+    )
 
 
 def _determine_x_y_scales(target_size: int, max_x: int, max_y: int, cut_to_format_ratio: float) -> Tuple[float, float]:
