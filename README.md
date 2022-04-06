@@ -105,14 +105,13 @@ In case you are building your own application you can simply use `mapa`'s functi
 from mapa import convert_tiff_to_stl
 
 path_to_stl = convert_tiff_to_stl(
-    input_file: "path/to/your/input_file.tiff",
-    as_ascii: False,
-    model_size: 200,
-    output_file: "path/to/your/output_file.stl",
-    max_res: False,
-    z_offset: 3.0,
-    z_scale: 1.5,
-    cut_to_format_ratio: None,
+    input_file="path/to/your/input_file.tiff",
+    as_ascii=False,
+    model_size=200,
+    output_file="path/to/your/output_file.stl",
+    max_res=False,
+    z_offset=3.0,
+    z_scale=1.5,
 )
 ```
 
