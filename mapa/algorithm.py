@@ -355,11 +355,11 @@ def _compute_triangles_of_bottom(max_x: int, max_y: int, x_scale: float, y_scale
         fr_triangles[i, 0, 0] = cnt * x_scale
         fr_triangles[i, 0, 1] = 0
         fr_triangles[i, 0, 2] = 0
-        fr_triangles[i, 1, 0] = (cnt + 1) * x_scale
-        fr_triangles[i, 1, 1] = 0
+        fr_triangles[i, 1, 0] = 0
+        fr_triangles[i, 1, 1] = 1 * y_scale
         fr_triangles[i, 1, 2] = 0
-        fr_triangles[i, 2, 0] = 0
-        fr_triangles[i, 2, 1] = 1 * y_scale
+        fr_triangles[i, 2, 0] = (cnt + 1) * x_scale
+        fr_triangles[i, 2, 1] = 0
         fr_triangles[i, 2, 2] = 0
 
     # first col
@@ -394,32 +394,32 @@ def _compute_triangles_of_bottom(max_x: int, max_y: int, x_scale: float, y_scale
         lc_triangles[i, 0, 0] = max_x * x_scale
         lc_triangles[i, 0, 1] = cnt * y_scale
         lc_triangles[i, 0, 2] = 0
-        lc_triangles[i, 1, 0] = max_x * x_scale
-        lc_triangles[i, 1, 1] = (cnt + 1) * y_scale
+        lc_triangles[i, 1, 0] = (max_x - 1) * x_scale
+        lc_triangles[i, 1, 1] = 0
         lc_triangles[i, 1, 2] = 0
-        lc_triangles[i, 2, 0] = (max_x - 1) * x_scale
-        lc_triangles[i, 2, 1] = 0
+        lc_triangles[i, 2, 0] = max_x * x_scale
+        lc_triangles[i, 2, 1] = (cnt + 1) * y_scale
         lc_triangles[i, 2, 2] = 0
 
     center_triangles = np.full((2, 3, 3), -1.0, dtype=np.float64)
     center_triangles[0, 0, 0] = (max_x - 1) * x_scale
     center_triangles[0, 0, 1] = 0 * y_scale
     center_triangles[0, 0, 2] = 0
-    center_triangles[0, 1, 0] = max_x * x_scale
-    center_triangles[0, 1, 1] = (max_y - 1) * y_scale
+    center_triangles[0, 1, 0] = 1 * x_scale
+    center_triangles[0, 1, 1] = max_y * y_scale
     center_triangles[0, 1, 2] = 0
-    center_triangles[0, 2, 0] = 1 * x_scale
-    center_triangles[0, 2, 1] = max_y * y_scale
+    center_triangles[0, 2, 0] = max_x * x_scale
+    center_triangles[0, 2, 1] = (max_y - 1) * y_scale
     center_triangles[0, 2, 2] = 0
 
     center_triangles[1, 0, 0] = 1 * x_scale
     center_triangles[1, 0, 1] = max_y * y_scale
     center_triangles[1, 0, 2] = 0
-    center_triangles[1, 1, 0] = 0 * x_scale
-    center_triangles[1, 1, 1] = 1 * y_scale
+    center_triangles[1, 1, 0] = (max_x - 1) * x_scale
+    center_triangles[1, 1, 1] = 0 * y_scale
     center_triangles[1, 1, 2] = 0
-    center_triangles[1, 2, 0] = (max_x - 1) * x_scale
-    center_triangles[1, 2, 1] = 0 * y_scale
+    center_triangles[1, 2, 0] = 0 * x_scale
+    center_triangles[1, 2, 1] = 1 * y_scale
     center_triangles[1, 2, 2] = 0
 
     return np.vstack((fr_triangles, lr_triangles, fc_triangles, lc_triangles, center_triangles))

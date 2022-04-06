@@ -16,6 +16,7 @@ def test_create_stl_for_bbox__success(mock_file_download, output_file, hawaii_bb
         allow_caching=False,
     )
     assert output_file.is_file()
+    # assert mesh.Mesh.from_file(output_file).is_closed()   # TODO
 
 
 def test_create_stl_for_bbox__z_scale_from_geotiff(mock_file_download, hawaii_bbox, output_file):
