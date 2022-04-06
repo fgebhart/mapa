@@ -3,10 +3,14 @@
     "python.linting.enabled": true,
     "cSpell.words": [
         "alos",
+        "ipyleaflet",
         "mapa",
+        "ndarray",
         "rasterio",
         "stac",
-        "streamlit"
+        "streamlit",
+        "strided",
+        "vstack"
     ],
     "terminal.integrated.env.osx": {
         "PYTHONBREAKPOINT": "ipdb.set_trace"
