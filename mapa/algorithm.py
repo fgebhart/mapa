@@ -349,22 +349,80 @@ def _compute_triangles_of_body_side(
 
 
 def _compute_triangles_of_bottom(max_x: int, max_y: int, x_scale: float, y_scale: float) -> np.ndarray:
-    triangles = []
-    triangles.append(
-        [
-            [0, 0, 0],
-            [0, max_y * y_scale, 0],
-            [max_x * x_scale, 0, 0],
-        ]
-    )
-    triangles.append(
-        [
-            [0, max_y * y_scale, 0],
-            [max_x * x_scale, max_y * y_scale, 0],
-            [max_x * x_scale, 0, 0],
-        ]
-    )
-    return triangles
+    # first row
+    fr_triangles = np.full((max_x - 1, 3, 3), -1.0, dtype=np.float64)
+    for i, cnt in enumerate(range(0, max_x - 1)):
+        fr_triangles[i, 0, 0] = cnt * x_scale
+        fr_triangles[i, 0, 1] = 0
+        fr_triangles[i, 0, 2] = 0
+        fr_triangles[i, 1, 0] = (cnt + 1) * x_scale
+        fr_triangles[i, 1, 1] = 0
+        fr_triangles[i, 1, 2] = 0
+        fr_triangles[i, 2, 0] = 0
+        fr_triangles[i, 2, 1] = 1 * y_scale
+        fr_triangles[i, 2, 2] = 0
+
+    # first col
+    fc_triangles = np.full((max_y - 1, 3, 3), -1.0, dtype=np.float64)
+    for i, cnt in enumerate(range(1, max_y)):
+        fc_triangles[i, 0, 0] = 0
+        fc_triangles[i, 0, 1] = cnt * y_scale
+        fc_triangles[i, 0, 2] = 0
+        fc_triangles[i, 1, 0] = 0
+        fc_triangles[i, 1, 1] = (cnt + 1) * y_scale
+        fc_triangles[i, 1, 2] = 0
+        fc_triangles[i, 2, 0] = 1 * x_scale
+        fc_triangles[i, 2, 1] = max_y * y_scale
+        fc_triangles[i, 2, 2] = 0
+
+    # last row
+    lr_triangles = np.full((max_x - 1, 3, 3), -1.0, dtype=np.float64)
+    for i, cnt in enumerate(range(1, max_x)):
+        lr_triangles[i, 0, 0] = cnt * x_scale
+        lr_triangles[i, 0, 1] = max_y * y_scale
+        lr_triangles[i, 0, 2] = 0
+        lr_triangles[i, 1, 0] = (cnt + 1) * x_scale
+        lr_triangles[i, 1, 1] = max_y * y_scale
+        lr_triangles[i, 1, 2] = 0
+        lr_triangles[i, 2, 0] = max_x * x_scale
+        lr_triangles[i, 2, 1] = (max_y - 1) * y_scale
+        lr_triangles[i, 2, 2] = 0
+
+    # last col
+    lc_triangles = np.full((max_y - 1, 3, 3), -1.0, dtype=np.float64)
+    for i, cnt in enumerate(range(0, max_y - 1)):
+        lc_triangles[i, 0, 0] = max_x * x_scale
+        lc_triangles[i, 0, 1] = cnt * y_scale
+        lc_triangles[i, 0, 2] = 0
+        lc_triangles[i, 1, 0] = max_x * x_scale
+        lc_triangles[i, 1, 1] = (cnt + 1) * y_scale
+        lc_triangles[i, 1, 2] = 0
+        lc_triangles[i, 2, 0] = (max_x - 1) * x_scale
+        lc_triangles[i, 2, 1] = 0
+        lc_triangles[i, 2, 2] = 0
+
+    center_triangles = np.full((2, 3, 3), -1.0, dtype=np.float64)
+    center_triangles[0, 0, 0] = (max_x - 1) * x_scale
+    center_triangles[0, 0, 1] = 0 * y_scale
+    center_triangles[0, 0, 2] = 0
+    center_triangles[0, 1, 0] = max_x * x_scale
+    center_triangles[0, 1, 1] = (max_y - 1) * y_scale
+    center_triangles[0, 1, 2] = 0
+    center_triangles[0, 2, 0] = 1 * x_scale
+    center_triangles[0, 2, 1] = max_y * y_scale
+    center_triangles[0, 2, 2] = 0
+
+    center_triangles[1, 0, 0] = 1 * x_scale
+    center_triangles[1, 0, 1] = max_y * y_scale
+    center_triangles[1, 0, 2] = 0
+    center_triangles[1, 1, 0] = 0 * x_scale
+    center_triangles[1, 1, 1] = 1 * y_scale
+    center_triangles[1, 1, 2] = 0
+    center_triangles[1, 2, 0] = (max_x - 1) * x_scale
+    center_triangles[1, 2, 1] = 0 * y_scale
+    center_triangles[1, 2, 2] = 0
+
+    return np.vstack((fr_triangles, lr_triangles, fc_triangles, lc_triangles, center_triangles))
 
 
 def _determine_x_y_scales(target_size: int, max_x: int, max_y: int, cut_to_format_ratio: float) -> Tuple[float, float]:

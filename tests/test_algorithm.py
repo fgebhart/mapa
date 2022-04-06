@@ -6,6 +6,7 @@ import pytest
 from mapa.algorithm import (
     _compute_triangles_of_3d_surface,
     _compute_triangles_of_body_side,
+    _compute_triangles_of_bottom,
     _create_raster,
     compute_all_triangles,
 )
@@ -204,3 +205,32 @@ def test_compute_all_triangles__min_occurrences() -> None:
     unique, counts = np.unique(triangles, return_counts=True)
     occurrences = dict(zip(unique, counts)).values()
     assert min(occurrences) >= 4
+
+
+def test__compute_triangles_of_bottom() -> None:
+    array = np.array(
+        [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+        ]
+    )
+
+    max_x, max_y = array.shape
+    bottom_triangles = _compute_triangles_of_bottom(max_x=max_x, max_y=max_y, x_scale=1.0, y_scale=1.0)
+
+    expected = np.array(
+        [
+            [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]],
+            [[1.0, 0.0, 0.0], [2.0, 0.0, 0.0], [0.0, 1.0, 0.0]],
+            [[1.0, 3.0, 0.0], [2.0, 3.0, 0.0], [3.0, 2.0, 0.0]],
+            [[2.0, 3.0, 0.0], [3.0, 3.0, 0.0], [3.0, 2.0, 0.0]],
+            [[0.0, 1.0, 0.0], [0.0, 2.0, 0.0], [1.0, 3.0, 0.0]],
+            [[0.0, 2.0, 0.0], [0.0, 3.0, 0.0], [1.0, 3.0, 0.0]],
+            [[3.0, 0.0, 0.0], [3.0, 1.0, 0.0], [2.0, 0.0, 0.0]],
+            [[3.0, 1.0, 0.0], [3.0, 2.0, 0.0], [2.0, 0.0, 0.0]],
+            [[2.0, 0.0, 0.0], [3.0, 2.0, 0.0], [1.0, 3.0, 0.0]],
+            [[1.0, 3.0, 0.0], [0.0, 1.0, 0.0], [2.0, 0.0, 0.0]],
+        ]
+    )
+    np.testing.assert_array_equal(expected, bottom_triangles)
