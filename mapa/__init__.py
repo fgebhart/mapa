@@ -50,7 +50,7 @@ def convert_array_to_stl(
     as_ascii: bool,
     model_size: int,
     max_res: bool,
-    z_offset: float,
+    z_offset: Union[None, float],
     z_scale: float,
     cut_to_format_ratio: Union[None, float],
     elevation_scale: float,
@@ -91,7 +91,7 @@ def convert_tiff_to_stl(
     model_size: int,
     output_file: Union[str, None],
     max_res: bool,
-    z_offset: float,
+    z_offset: Union[None, float],
     z_scale: float,
     cut_to_format_ratio: Union[None, float],
 ) -> Path:
@@ -147,7 +147,7 @@ def convert_bbox_to_stl(
     model_size: int = 200,
     output_file: str = "output.stl",
     max_res: bool = False,
-    z_offset: float = 0.0,
+    z_offset: Union[None, float] = 0.0,
     z_scale: float = 1.0,
     cut_to_format_ratio: Union[None, float] = None,
     allow_caching: bool = True,
@@ -172,7 +172,7 @@ def convert_bbox_to_stl(
         Whether maximum resolution should be used. Note, that this flag potentially increases compute time
         and memory consumption dramatically. The default behavior (i.e. max_res=False) should return 3d models
         with sufficient resolution, while the output stl file should be < ~300 MB. By default False
-    z_offset : float, optional
+    z_offset : Union[None, float], optional
         Offset distance in millimeter to be put below the 3d model. Is not influenced by z-scale. Set to None
         if you want your model to have the natural offset, corresponding to height above mean sea level.
         By default 0.0
