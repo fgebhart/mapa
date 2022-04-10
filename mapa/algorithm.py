@@ -437,7 +437,7 @@ def _determine_x_y_scales(target_size: int, max_x: int, max_y: int, cut_to_forma
     return x_scale, y_scale
 
 
-def _determine_z_offset(z_offset: float, minimum: float, elevation_scale: float) -> float:
+def _determine_z_offset(z_offset: Union[None, float], minimum: float, elevation_scale: float) -> float:
     if z_offset is None:
         # using the natural height, i.e. islands will have an z_offset of ~0 and mountains will have a larger z_offset
         return minimum * elevation_scale
@@ -451,7 +451,7 @@ def _determine_z_offset(z_offset: float, minimum: float, elevation_scale: float)
 def compute_all_triangles(
     array: npt.ArrayLike,
     target_size: int,
-    z_offset: float,
+    z_offset: Union[None, float],
     z_scale: float,
     elevation_scale: float,
     cut_to_format_ratio: Union[float, None],

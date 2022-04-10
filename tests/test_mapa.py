@@ -28,7 +28,7 @@ def test_create_stl_for_bbox__z_scale_from_geotiff(mock_file_download, hawaii_bb
         max_res=True,
         z_offset=5,
         z_scale=0.3,
-        cut_to_format_ratio=True,
+        cut_to_format_ratio=1.0,
         allow_caching=False,
     )
     x, y, z = get_dimensions_of_stl_file(output_file)
@@ -46,7 +46,7 @@ def test_create_stl_for_bbox__z_scale_from_geotiff(mock_file_download, hawaii_bb
         max_res=True,
         z_offset=10,
         z_scale=0.3,
-        cut_to_format_ratio=True,
+        cut_to_format_ratio=1.0,
         allow_caching=False,
     )
     x, y, z_10 = get_dimensions_of_stl_file(output_file)
