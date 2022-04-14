@@ -191,6 +191,9 @@ def convert_bbox_to_stl(
     if bbox_geometry is None:
         raise ValueError("⛔️  ERROR: make sure to draw a rectangle on the map first!")
 
+    # evaluate tile format to fail early in case of invalid input value
+    tiles_format = get_x_y_from_tiles_format(split_area_in_tiles)
+
     args = locals().copy()
     args.pop("progress_bar", None)
 
@@ -200,7 +203,6 @@ def convert_bbox_to_stl(
     elevation_scale = determine_elevation_scale(tiff, model_size)
     array = tiff_to_two_dimensional_array(tiff)
 
-    tiles_format = get_x_y_from_tiles_format(split_area_in_tiles)
     list_of_tiled_arrays = split_array_into_tiles(array, tiles_format)
     stl_files = []
     for i, array in enumerate(list_of_tiled_arrays):

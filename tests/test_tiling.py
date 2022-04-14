@@ -96,5 +96,17 @@ def test__ensure_array_is_evenly_divisible_and_get_blocks__rect() -> None:
 
 
 def test_get_x_y_from_tiles_format() -> None:
+    # valid examples
     assert get_x_y_from_tiles_format("3*3") == TileFormat(x=3, y=3)
     assert get_x_y_from_tiles_format("2*10") == TileFormat(x=2, y=10)
+
+    # invalid examples
+    error_msg = "Invalid format"
+    with pytest.raises(ValueError, match=error_msg):
+        assert get_x_y_from_tiles_format("foo")
+
+    with pytest.raises(ValueError, match=error_msg):
+        assert get_x_y_from_tiles_format("1*2*3")
+
+    with pytest.raises(ValueError, match="invalid literal for int"):
+        assert get_x_y_from_tiles_format("a*f")
