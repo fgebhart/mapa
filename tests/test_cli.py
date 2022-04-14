@@ -1,4 +1,3 @@
-import hashlib
 from pathlib import Path
 
 import pytest
@@ -7,6 +6,7 @@ from rasterio.errors import RasterioIOError
 
 from mapa.cli import dem2stl, mapa
 from mapa.stl_file import get_dimensions_of_stl_file
+from mapa.utils import md5_sum
 
 
 def test_dem2stl__version() -> None:
@@ -29,6 +29,13 @@ def test_dem2stl__no_input_file_no_demo(caplog) -> None:
     assert "Aborted!" in result.stdout
 
 
+def test_dem2stl__demo(caplog) -> None:
+    cli = CliRunner()
+    result = cli.invoke(dem2stl, ["--demo"])
+    assert result.exit_code == 0, result.stdout
+    assert "successfully generated STL file:" in caplog.text
+
+
 def test_dem2stl__not_a_tiff_file(corrupted_tiff, tmpdir) -> None:
     cli = CliRunner()
     output_file = tmpdir / "foo.stl"
@@ -38,18 +45,13 @@ def test_dem2stl__not_a_tiff_file(corrupted_tiff, tmpdir) -> None:
         raise result.exception
 
 
-def _dimensions_are_equal(stl_a, stl_b) -> bool:
+def _assert_dimensions_equal(stl_a: Path, stl_b: Path, negate: bool = False) -> bool:
     dim_a = get_dimensions_of_stl_file(stl_a)
     dim_b = get_dimensions_of_stl_file(stl_b)
-    return dim_a == dim_b
-
-
-def _md5_sum(path: Path) -> str:
-    hash_md5 = hashlib.md5()
-    with open(path, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            hash_md5.update(chunk)
-    return hash_md5.hexdigest()
+    if negate:
+        assert not dim_a == dim_b, f"dimensions not equal: {dim_a} != {dim_b}"
+    else:
+        assert dim_a == dim_b, f"dimensions not equal: {dim_a} != {dim_b}"
 
 
 def test_dem2stl__binary(test_tiff, tmpdir, test_stl_binary, caplog) -> None:
@@ -60,7 +62,7 @@ def test_dem2stl__binary(test_tiff, tmpdir, test_stl_binary, caplog) -> None:
     assert f"successfully generated STL file: {Path(output_file).absolute()}" in caplog.text
     assert Path(output_file).is_file()
 
-    assert _dimensions_are_equal(test_stl_binary, output_file)
+    _assert_dimensions_equal(test_stl_binary, output_file)
 
 
 def test_dem2stl__ascii(test_tiff, tmpdir, test_stl_ascii, caplog) -> None:
@@ -71,34 +73,34 @@ def test_dem2stl__ascii(test_tiff, tmpdir, test_stl_ascii, caplog) -> None:
     assert f"successfully generated STL file: {Path(output_file).absolute()}" in caplog.text
     assert Path(output_file).is_file()
 
-    assert _dimensions_are_equal(test_stl_ascii, output_file)
-    assert _md5_sum(test_stl_ascii) == _md5_sum(output_file)
+    _assert_dimensions_equal(test_stl_ascii, output_file)
+    assert md5_sum(test_stl_ascii) == md5_sum(output_file)
 
 
 def test_dem2stl__model_size(test_tiff, tmpdir, test_stl_binary) -> None:
     cli = CliRunner()
 
     # create output file of model size 200
-    output_file_200 = tmpdir / "output_100.stl"
+    output_file_200 = tmpdir / "output_200.stl"
     result = cli.invoke(
         dem2stl,
         ["--input", str(test_tiff), "--output", output_file_200, "--model-size", 200],
     )
     assert result.exit_code == 0, result.stdout
-    assert _dimensions_are_equal(test_stl_binary, output_file_200)
+    _assert_dimensions_equal(test_stl_binary, output_file_200)
 
     output_200_size = Path(output_file_200).stat().st_size
     expected_size = Path(test_stl_binary).stat().st_size
     assert output_200_size == expected_size
 
     # create output file of model size 100
-    output_file_100 = tmpdir / "output_200.stl"
+    output_file_100 = tmpdir / "output_100.stl"
     result = cli.invoke(
         dem2stl,
         ["--input", str(test_tiff), "--output", output_file_100, "--model-size", 100],
     )
     assert result.exit_code == 0, result.stdout
-    assert not _dimensions_are_equal(test_stl_binary, output_file_100)
+    _assert_dimensions_equal(test_stl_binary, output_file_100, negate=True)
 
     output_100_size = Path(output_file_100).stat().st_size
     # even though the files are different, their sizes (and thus the number of triangles) should be the same

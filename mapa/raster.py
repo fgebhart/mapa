@@ -11,7 +11,7 @@ from rasterio.mask import mask
 from rasterio.merge import merge
 from rasterio.windows import Window
 
-from mapa.utils import _path_to_clipped_tiff, _path_to_merged_tiff
+from mapa.utils import path_to_clipped_tiff, path_to_merged_tiff
 
 log = logging.getLogger(__name__)
 
@@ -30,14 +30,14 @@ def clip_tiff_to_bbox(input_tiff: Path, bbox_geometry: dict, bbox_hash: str) -> 
             "crs": data.crs,
         }
     )
-    clipped_tiff = _path_to_clipped_tiff(bbox_hash)
+    clipped_tiff = path_to_clipped_tiff(bbox_hash)
     with rio.open(clipped_tiff, "w", **out_meta) as file:
         file.write(out_img)
     return clipped_tiff
 
 
-def read_tiff(path: Path) -> np.ndarray:
-    array = rio.open(path).read()
+def tiff_to_two_dimensional_array(tiff: DatasetReader) -> np.ndarray:
+    array = tiff.read()
     # drop higher dimension to get 2-dimensional (x * y) array
     return array[0, :, :]
 
@@ -140,7 +140,7 @@ def merge_tiffs(tiffs: List[Path], bbox_hash: str) -> Path:
             "crs": data.crs,
         }
     )
-    tiff = _path_to_merged_tiff(bbox_hash)
+    tiff = path_to_merged_tiff(bbox_hash)
     with rio.open(tiff, "w", **out_meta) as dest:
         dest.write(mosaic)
     return tiff

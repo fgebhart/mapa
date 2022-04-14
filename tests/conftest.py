@@ -28,7 +28,7 @@ def clipped_tiff():
 
 @pytest.fixture
 def output_file(tmpdir):
-    yield tmpdir / "test.stl"
+    yield tmpdir / "test"
 
 
 @pytest.fixture
@@ -66,7 +66,8 @@ def geojson_bbox():
 
 
 @pytest.fixture
-def hawaii_bbox():
+def hawaii_bbox(mock_file_download):
+    # Use this fixture to mock downloading geotiffs and replace it with a pre-fetched tiff
     yield {
         "type": "Polygon",
         "coordinates": [
