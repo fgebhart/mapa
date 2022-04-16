@@ -62,9 +62,9 @@ def test_create_zip_archive(file_a, file_b, tmp_path) -> None:
     assert checksum_b == md5_sum(b_unzipped)
 
 
-def test_create_zip_archive__compression_impact(test_stl_binary) -> None:
+def test_create_zip_archive__compression_impact(test_stl_binary, output_file) -> None:
     uncompressed = test_stl_binary.stat().st_size
-    compressed = create_zip_archive(files=[test_stl_binary], output_file="test.zip").stat().st_size
+    compressed = create_zip_archive(files=[test_stl_binary], output_file=f"{output_file}.zip").stat().st_size
 
     # compressing a usual STL file reduces the size by more than a factor of 4
     assert compressed < uncompressed / 4

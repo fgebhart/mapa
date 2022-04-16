@@ -13,6 +13,7 @@ class TileFormat:
 def split_array_into_tiles(array: np.ndarray, tiles_format: TileFormat) -> List[np.ndarray]:
     # ensure array is evenly divisible by the corresponding number of the tile format
     x, y = array.shape
+    print(f"max_x: {x}, max_y: {y}")
 
     if tiles_format.x > x or tiles_format.y > y:
         raise ValueError("Input array is too small to be split into tiles.")
@@ -22,10 +23,12 @@ def split_array_into_tiles(array: np.ndarray, tiles_format: TileFormat) -> List[
 
     if n_rows != 0:
         # drop number of rows
+        print(f"dropping {n_rows} last rows")
         array = array[:-n_rows]
 
     if n_cols != 0:
         # drop number of cols
+        print(f"dropping {n_cols} last rows")
         array = array[:, :-n_cols]
 
     return _divide_array_into_tiles(array, tiles_format=tiles_format)

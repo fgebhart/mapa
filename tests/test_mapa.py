@@ -220,15 +220,15 @@ def test_mapa__split_area_into_tiles__success(hawaii_bbox, tmp_path, compress) -
         assert y == size / 2
 
 
-def test_mapa__split_area_into_tiles__one_to_two(hawaii_bbox) -> None:
+def test_mapa__split_area_into_tiles__one_by_two(hawaii_bbox, output_file) -> None:
     size = 100
     # first round we have 1 by 2
     output = convert_bbox_to_stl(
         bbox_geometry=hawaii_bbox,
-        output_file="foo",
+        output_file=output_file,
         split_area_in_tiles="1*2",
         model_size=size,
-        z_scale=3.0,
+        cut_to_format_ratio=1.0,
         compress=False,
     )
     assert isinstance(output, list)
@@ -246,10 +246,10 @@ def test_mapa__split_area_into_tiles__one_to_two(hawaii_bbox) -> None:
     # second round we have 2 by 1
     output = convert_bbox_to_stl(
         bbox_geometry=hawaii_bbox,
-        output_file="baa",
+        output_file=output_file,
         split_area_in_tiles="2*1",
         model_size=size,
-        z_scale=3.0,
+        cut_to_format_ratio=1.0,
         compress=False,
     )
     assert isinstance(output, list)
@@ -264,7 +264,7 @@ def test_mapa__split_area_into_tiles__one_to_two(hawaii_bbox) -> None:
     assert math.isclose(y2, size, rel_tol=0.03)
 
 
-def test_mapa__split_area_into_tiles__area_too_small() -> None:
+def test_mapa__split_area_into_tiles__area_too_small(output_file) -> None:
     bbox = {
         "type": "Polygon",
         "coordinates": [
@@ -280,10 +280,86 @@ def test_mapa__split_area_into_tiles__area_too_small() -> None:
     with pytest.raises(ValueError, match="Input array is too small to be split into tiles."):
         convert_bbox_to_stl(
             bbox_geometry=bbox,
-            output_file="foo",
+            output_file=output_file,
             split_area_in_tiles="5*5",
             model_size=100,
             z_scale=3.0,
             compress=False,
             allow_caching=False,
         )
+
+
+@pytest.mark.parametrize("cut_to_format_ratio", (None, 1.0))
+def test_mapa__cut_to_format_ratio__two_by_two(cut_to_format_ratio, output_file, hawaii_bbox) -> None:
+    # creating 2 by 2 tiles
+    size = 100
+    output = convert_bbox_to_stl(
+        bbox_geometry=hawaii_bbox,
+        output_file=output_file,
+        split_area_in_tiles="2*2",
+        model_size=size,
+        cut_to_format_ratio=cut_to_format_ratio,
+        compress=False,
+    )
+    assert isinstance(output, list)
+    assert len(output) == 4
+
+    x1, y1, _ = get_dimensions_of_stl_file(output[0])
+    x2, y2, _ = get_dimensions_of_stl_file(output[1])
+    x3, y3, _ = get_dimensions_of_stl_file(output[2])
+    x4, y4, _ = get_dimensions_of_stl_file(output[3])
+
+    # adding two sides will result in the desired model size
+    assert x1 + x2 == size
+    assert x3 + x4 == size
+    assert y1 + y2 == size
+    assert y3 + y4 == size
+
+
+def test_mapa__interplay_of_cut_to_format_ratio_with_tiling(output_file, hawaii_bbox) -> None:
+    size = 100
+    # setting cut_to_format_ratio to None will not enforce a exact output size in y-dimension
+    # because a few cols got dropped during tiling
+    output = convert_bbox_to_stl(
+        bbox_geometry=hawaii_bbox,
+        output_file=output_file,
+        split_area_in_tiles="1*2",
+        model_size=size,
+        cut_to_format_ratio=None,
+        compress=False,
+    )
+    assert isinstance(output, list)
+    assert len(output) == 2
+
+    x1, y1, _ = get_dimensions_of_stl_file(output[0])
+    x2, y2, _ = get_dimensions_of_stl_file(output[1])
+    assert x1 == size
+    assert x2 == size
+    assert y1 == y2
+    # y-dimension does not match to the exact half of the size
+    assert y1 != size / 2
+    assert y2 != size / 2
+    assert math.isclose(y1, size / 2, rel_tol=0.03)
+    assert math.isclose(y2, size / 2, rel_tol=0.03)
+    assert y1 < size / 2
+    assert y2 < size / 2
+
+    # now setting cut_to_format_ratio to 1.0 means we want the combined stl file to be squared, i.e. we want to have
+    # exact dimensions
+    output = convert_bbox_to_stl(
+        bbox_geometry=hawaii_bbox,
+        output_file=output_file,
+        split_area_in_tiles="1*2",
+        model_size=size,
+        cut_to_format_ratio=1.0,
+        compress=False,
+    )
+    assert isinstance(output, list)
+    assert len(output) == 2
+
+    x1, y1, _ = get_dimensions_of_stl_file(output[0])
+    x2, y2, _ = get_dimensions_of_stl_file(output[1])
+    assert x1 == size
+    assert x2 == size
+    assert y1 == size / 2
+    assert y2 == size / 2

@@ -202,7 +202,10 @@ def convert_bbox_to_stl(
     tiff = rio.open(path_to_tiff)
     elevation_scale = determine_elevation_scale(tiff, model_size)
     array = tiff_to_two_dimensional_array(tiff)
+    if cut_to_format_ratio:
+        array = cut_array_to_format(array, cut_to_format_ratio)
 
+    breakpoint()
     list_of_tiled_arrays = split_array_into_tiles(array, tiles_format)
     stl_files = []
     for i, array in enumerate(list_of_tiled_arrays):
@@ -214,7 +217,7 @@ def convert_bbox_to_stl(
                 max_res=max_res,
                 z_offset=z_offset,
                 z_scale=z_scale,
-                cut_to_format_ratio=cut_to_format_ratio,
+                cut_to_format_ratio=None,
                 elevation_scale=elevation_scale,
                 output_file=f"{output_file}_{i+1}.stl" if len(list_of_tiled_arrays) > 1 else f"{output_file}.stl",
                 tiles_format=tiles_format,
