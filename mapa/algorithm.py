@@ -113,18 +113,22 @@ the usage of numpy-stl, which has a super convenient and efficient interface for
 STL file.
 """
 
-
 import logging
-from typing import Tuple, Union
+from dataclasses import dataclass
+from typing import Union
 
 import numba as nb
 import numpy as np
 import numpy.typing as npt
 from numpy.lib.stride_tricks import as_strided
 
-from mapa.tiling import TileFormat
-
 log = logging.getLogger(__name__)
+
+
+@dataclass
+class ModelSize:
+    x: int
+    y: int
 
 
 @nb.njit(fastmath=True, cache=True)
@@ -427,23 +431,6 @@ def _compute_triangles_of_bottom(max_x: int, max_y: int, x_scale: float, y_scale
     return np.vstack((fr_triangles, lr_triangles, fc_triangles, lc_triangles, center_triangles))
 
 
-def _determine_x_y_scales(
-    target_size: int, max_x: int, max_y: int, cut_to_format_ratio: Union[float, None], tiles_format: TileFormat
-) -> Tuple[float, float]:
-    x_scale = target_size / max_x
-    if cut_to_format_ratio:
-        if cut_to_format_ratio > 1.0:
-            # ensure ratio is between 0.0 and 1.0 and transpose ratio
-            cut_to_format_ratio = cut_to_format_ratio**-1
-        y_scale = target_size * cut_to_format_ratio / max_y
-    else:
-        y_scale = target_size / max_x
-    if tiles_format.x >= tiles_format.y:
-        return x_scale / tiles_format.x, y_scale / tiles_format.x
-    else:
-        return x_scale, y_scale
-
-
 def _determine_z_offset(z_offset: Union[None, float], minimum: float, elevation_scale: float) -> float:
     if z_offset is None:
         # using the natural height, i.e. islands will have an z_offset of ~0 and mountains will have a larger z_offset
@@ -457,12 +444,10 @@ def _determine_z_offset(z_offset: Union[None, float], minimum: float, elevation_
 
 def compute_all_triangles(
     array: npt.ArrayLike,
-    target_size: int,
+    desired_size: ModelSize,
     z_offset: Union[None, float],
     z_scale: float,
     elevation_scale: float,
-    cut_to_format_ratio: Union[float, None],
-    tiles_format: TileFormat = TileFormat(x=1, y=1),
 ) -> np.ndarray:
 
     max_x, max_y = array.shape
@@ -470,7 +455,7 @@ def compute_all_triangles(
     log.debug("🗺  creating base raster for tiff...")
     raster = _create_raster(array, max_x, max_y)
 
-    x_scale, y_scale = _determine_x_y_scales(target_size, max_x, max_y, cut_to_format_ratio, tiles_format)
+    x_scale, y_scale = desired_size.x / max_x, desired_size.y / max_y
     z_offset = _determine_z_offset(z_offset, raster.min(), elevation_scale)
     combined_z_scale = elevation_scale * z_scale
 

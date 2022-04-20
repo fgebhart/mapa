@@ -103,10 +103,13 @@ def test_get_x_y_from_tiles_format() -> None:
     # invalid examples
     error_msg = "Invalid format"
     with pytest.raises(ValueError, match=error_msg):
-        assert get_x_y_from_tiles_format("foo")
+        get_x_y_from_tiles_format("foo")
 
     with pytest.raises(ValueError, match=error_msg):
-        assert get_x_y_from_tiles_format("1*2*3")
+        get_x_y_from_tiles_format("1*2*3")
+
+    with pytest.raises(ValueError, match=error_msg):
+        get_x_y_from_tiles_format("0*0")
 
     with pytest.raises(ValueError, match="invalid literal for int"):
-        assert get_x_y_from_tiles_format("a*f")
+        get_x_y_from_tiles_format("a*f")

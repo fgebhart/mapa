@@ -58,12 +58,15 @@ def _divide_array_into_tiles(array, tiles_format: TileFormat) -> List[np.ndarray
 def get_x_y_from_tiles_format(tiles_format: str) -> TileFormat:
     error_msg = (
         "Invalid format of `split_area_in_tiles`. Input value needs to be of format `n*m`, where `n` and `m` "
-        "are integers."
+        "are integers greater than zero."
     )
     if "*" not in tiles_format:
         raise ValueError(error_msg)
 
     format_list = tiles_format.split("*")
+
+    if "0" in format_list:
+        raise ValueError(error_msg)
 
     if len(format_list) != 2:
         raise ValueError(error_msg)

@@ -7,7 +7,7 @@ import numpy as np
 import rasterio as rio
 
 from mapa import conf
-from mapa.algorithm import compute_all_triangles, reduce_resolution
+from mapa.algorithm import ModelSize, compute_all_triangles, reduce_resolution
 from mapa.caching import get_hash_of_geojson, tiff_for_bbox_is_cached
 from mapa.raster import (
     clip_tiff_to_bbox,
@@ -15,11 +15,11 @@ from mapa.raster import (
     determine_elevation_scale,
     merge_tiffs,
     remove_empty_first_and_last_rows_and_cols,
-    tiff_to_two_dimensional_array,
+    tiff_to_array,
 )
 from mapa.stac import fetch_stac_items_for_bbox
 from mapa.stl_file import save_to_stl_file
-from mapa.tiling import TileFormat, get_x_y_from_tiles_format, split_array_into_tiles
+from mapa.tiling import get_x_y_from_tiles_format, split_array_into_tiles
 from mapa.utils import path_to_clipped_tiff
 from mapa.verification import verify_input_and_output_are_valid
 from mapa.zip import create_zip_archive
@@ -32,14 +32,13 @@ log.setLevel(os.getenv("MAPA_LOG_LEVEL", "INFO"))
 def convert_array_to_stl(
     array: np.ndarray,
     as_ascii: bool,
-    model_size: int,
+    desired_size: ModelSize,
     max_res: bool,
     z_offset: Union[None, float],
     z_scale: float,
     cut_to_format_ratio: Union[None, float],
     elevation_scale: float,
     output_file: Path,
-    tiles_format: TileFormat = TileFormat(x=1, y=1),
 ) -> Path:
     x, y = array.shape
     # when merging tiffs, sometimes an empty row/col is added, which should be dropped (in case the array size suffices)
@@ -60,9 +59,7 @@ def convert_array_to_stl(
             log.debug("🔍  reducing image resolution...")
             array = reduce_resolution(array, bin_factor=bin_fac)
 
-    triangles = compute_all_triangles(
-        array, model_size, z_offset, z_scale, elevation_scale, cut_to_format_ratio, tiles_format
-    )
+    triangles = compute_all_triangles(array, desired_size, z_offset, z_scale, elevation_scale)
     log.debug("💾  saving data to stl file...")
 
     output_file = save_to_stl_file(triangles, output_file, as_ascii)
@@ -85,12 +82,18 @@ def convert_tiff_to_stl(
 
     tiff = rio.open(input_file)
     elevation_scale = determine_elevation_scale(tiff, model_size)
-    array = tiff_to_two_dimensional_array(tiff)
+    array = tiff_to_array(tiff)
+
+    if cut_to_format_ratio:
+        desired_size = ModelSize(x=model_size, y=model_size * cut_to_format_ratio)
+    else:
+        x, y = array.shape
+        desired_size = ModelSize(x=model_size, y=model_size * y / x)
 
     return convert_array_to_stl(
         array=array,
         as_ascii=as_ascii,
-        model_size=model_size,
+        desired_size=desired_size,
         max_res=max_res,
         z_offset=z_offset,
         z_scale=z_scale,
@@ -169,11 +172,11 @@ def convert_bbox_to_stl(
         input format. This option is particularly useful when an exact output format ratio is required for
         example when planning to put the 3d printed model into a picture frame. Using this option will always
         try to cut the shorter side of the input tiff. By default None
-    split_area_in_tiles: str, optional
+    split_area_in_tiles : str, optional
         Split the selected bounding box into tiles with this option. The allowed format of a given string is
         "n*m" e.g. "1*1`, "2*3", "4*4" or similar, where "1*1" would not split at all and result in only
         one stl file. If an allowed tile format is specified, `n*m` stl files will be computed. By default "1*1"
-    compress: bool, optional
+    compress : bool, optional
         If enabled, the output stl file(s) will be compressed to a zip file. Compressing is recommended as it
         reduces the data volume of typical stl files by a factor of ~4.
     allow_caching : bool, optional
@@ -201,26 +204,26 @@ def convert_bbox_to_stl(
     path_to_tiff = _get_tiff_for_bbox(bbox_geometry, allow_caching, progress_bar)
     tiff = rio.open(path_to_tiff)
     elevation_scale = determine_elevation_scale(tiff, model_size)
-    array = tiff_to_two_dimensional_array(tiff)
+    array = tiff_to_array(tiff)
+    desired_size = ModelSize(x=model_size / tiles_format.x, y=model_size / tiles_format.y)
     if cut_to_format_ratio:
+        desired_size.y = desired_size.y * cut_to_format_ratio
         array = cut_array_to_format(array, cut_to_format_ratio)
 
-    breakpoint()
-    list_of_tiled_arrays = split_array_into_tiles(array, tiles_format)
+    tiled_arrays = split_array_into_tiles(array, tiles_format)
     stl_files = []
-    for i, array in enumerate(list_of_tiled_arrays):
+    for i, array in enumerate(tiled_arrays):
         stl_files.append(
             convert_array_to_stl(
                 array=array,
                 as_ascii=as_ascii,
-                model_size=model_size,
+                desired_size=desired_size,
                 max_res=max_res,
                 z_offset=z_offset,
                 z_scale=z_scale,
-                cut_to_format_ratio=None,
+                cut_to_format_ratio=None,  # None as array was already cut to achieve format ratio
                 elevation_scale=elevation_scale,
-                output_file=f"{output_file}_{i+1}.stl" if len(list_of_tiled_arrays) > 1 else f"{output_file}.stl",
-                tiles_format=tiles_format,
+                output_file=f"{output_file}_{i+1}.stl" if len(tiled_arrays) > 1 else f"{output_file}.stl",
             )
         )
     if compress:

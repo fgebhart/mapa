@@ -36,7 +36,7 @@ def clip_tiff_to_bbox(input_tiff: Path, bbox_geometry: dict, bbox_hash: str) -> 
     return clipped_tiff
 
 
-def tiff_to_two_dimensional_array(tiff: DatasetReader) -> np.ndarray:
+def tiff_to_array(tiff: DatasetReader) -> np.ndarray:
     array = tiff.read()
     # drop higher dimension to get 2-dimensional (x * y) array
     return array[0, :, :]
