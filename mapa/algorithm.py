@@ -127,8 +127,8 @@ log = logging.getLogger(__name__)
 
 @dataclass
 class ModelSize:
-    x: int
-    y: int
+    x: float
+    y: float
 
 
 @nb.njit(fastmath=True, cache=True)

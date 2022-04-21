@@ -36,7 +36,6 @@ def convert_array_to_stl(
     max_res: bool,
     z_offset: Union[None, float],
     z_scale: float,
-    cut_to_format_ratio: Union[None, float],
     elevation_scale: float,
     output_file: Path,
 ) -> Path:
@@ -44,8 +43,6 @@ def convert_array_to_stl(
     # when merging tiffs, sometimes an empty row/col is added, which should be dropped (in case the array size suffices)
     if x > 1 and y > 1:
         array = remove_empty_first_and_last_rows_and_cols(array)
-    if cut_to_format_ratio:
-        array = cut_array_to_format(array, cut_to_format_ratio)
 
     if max_res:
         if x * y > conf.PERFORMANCE_WARNING_THRESHOLD:
@@ -67,6 +64,14 @@ def convert_array_to_stl(
     return Path(output_file)
 
 
+def _get_desired_size(array: np.ndarray, x: float, y: float, cut_to_format_ratio: Union[None, float]) -> ModelSize:
+    if cut_to_format_ratio:
+        return ModelSize(x=x, y=y * cut_to_format_ratio)
+    else:
+        rows, cols = array.shape
+        return ModelSize(x=x, y=y / rows * cols)
+
+
 def convert_tiff_to_stl(
     input_file: str,
     as_ascii: bool,
@@ -85,10 +90,8 @@ def convert_tiff_to_stl(
     array = tiff_to_array(tiff)
 
     if cut_to_format_ratio:
-        desired_size = ModelSize(x=model_size, y=model_size * cut_to_format_ratio)
-    else:
-        x, y = array.shape
-        desired_size = ModelSize(x=model_size, y=model_size * y / x)
+        array = cut_array_to_format(array, cut_to_format_ratio)
+    desired_size = _get_desired_size(array=array, x=model_size, y=model_size, cut_to_format_ratio=cut_to_format_ratio)
 
     return convert_array_to_stl(
         array=array,
@@ -97,7 +100,6 @@ def convert_tiff_to_stl(
         max_res=max_res,
         z_offset=z_offset,
         z_scale=z_scale,
-        cut_to_format_ratio=cut_to_format_ratio,
         elevation_scale=elevation_scale,
         output_file=output_file,
     )
@@ -205,13 +207,15 @@ def convert_bbox_to_stl(
     tiff = rio.open(path_to_tiff)
     elevation_scale = determine_elevation_scale(tiff, model_size)
     array = tiff_to_array(tiff)
-    desired_size = ModelSize(x=model_size / tiles_format.x, y=model_size / tiles_format.y)
     if cut_to_format_ratio:
-        desired_size.y = desired_size.y * cut_to_format_ratio
         array = cut_array_to_format(array, cut_to_format_ratio)
-    else:
-        x, y = array.shape
-        desired_size.y = desired_size.y / x * y
+
+    desired_size = _get_desired_size(
+        array=array,
+        x=model_size / tiles_format.x,
+        y=model_size / tiles_format.y,
+        cut_to_format_ratio=cut_to_format_ratio,
+    )
 
     tiled_arrays = split_array_into_tiles(array, tiles_format)
     stl_files = []
@@ -224,7 +228,6 @@ def convert_bbox_to_stl(
                 max_res=max_res,
                 z_offset=z_offset,
                 z_scale=z_scale,
-                cut_to_format_ratio=None,  # None as array was already cut to achieve format ratio
                 elevation_scale=elevation_scale,
                 output_file=f"{output_file}_{i+1}.stl" if len(tiled_arrays) > 1 else f"{output_file}.stl",
             )
