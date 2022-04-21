@@ -209,6 +209,9 @@ def convert_bbox_to_stl(
     if cut_to_format_ratio:
         desired_size.y = desired_size.y * cut_to_format_ratio
         array = cut_array_to_format(array, cut_to_format_ratio)
+    else:
+        x, y = array.shape
+        desired_size.y = desired_size.y / x * y
 
     tiled_arrays = split_array_into_tiles(array, tiles_format)
     stl_files = []

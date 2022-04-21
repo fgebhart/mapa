@@ -318,8 +318,6 @@ def test_mapa__cut_to_format_ratio__two_by_two(cut_to_format_ratio, output_file,
 
 def test_mapa__interplay_of_cut_to_format_ratio_with_tiling(output_file, hawaii_bbox) -> None:
     size = 100
-    # setting cut_to_format_ratio to None will not enforce a exact output size in y-dimension
-    # because a few cols got dropped during tiling, the y-dimension is not equal to size / 2
     output = convert_bbox_to_stl(
         bbox_geometry=hawaii_bbox,
         output_file=output_file,
@@ -335,19 +333,11 @@ def test_mapa__interplay_of_cut_to_format_ratio_with_tiling(output_file, hawaii_
     x2, y2, _ = get_dimensions_of_stl_file(output[1])
     assert x1 == size
     assert x2 == size
-    assert y1 == y2
     assert y1 == size / 2
     assert y2 == size / 2
-    # y-dimension does not match to the exact half of the size
-    # assert y1 != size / 2
-    # assert y2 != size / 2
-    # assert math.isclose(y1, size / 2, rel_tol=0.03)
-    # assert math.isclose(y2, size / 2, rel_tol=0.03)
-    # assert y1 < size / 2
-    # assert y2 < size / 2
 
-    # now setting cut_to_format_ratio to 1.0 means we want the combined stl file to be squared, i.e. we want to have
-    # exact dimensions
+    # now setting cut_to_format_ratio to 1.0 means we want the combined stl file to be squared, since bbox is already
+    # squared we expect the same results
     output = convert_bbox_to_stl(
         bbox_geometry=hawaii_bbox,
         output_file=output_file,
@@ -365,3 +355,53 @@ def test_mapa__interplay_of_cut_to_format_ratio_with_tiling(output_file, hawaii_
     assert x2 == size
     assert y1 == size / 2
     assert y2 == size / 2
+
+    # setting cut_to_format_ratio = 0.5 means one side is only half of the other and having tiles of 1*2 means y
+    # dimension equals a quater of the size
+    output = convert_bbox_to_stl(
+        bbox_geometry=hawaii_bbox,
+        output_file=output_file,
+        split_area_in_tiles="1*2",
+        model_size=size,
+        cut_to_format_ratio=0.5,
+        compress=False,
+    )
+    assert isinstance(output, list)
+    assert len(output) == 2
+
+    x1, y1, _ = get_dimensions_of_stl_file(output[0])
+    x2, y2, _ = get_dimensions_of_stl_file(output[1])
+    assert x1 == size
+    assert x2 == size
+    assert y1 == size / 4
+    assert y2 == size / 4
+
+    # keeping cut_to_format_ratio = 0.5 and setting tiles to 2*2 will result in 4 stls where the sum of the y distance
+    # equals the half of the size
+    output = convert_bbox_to_stl(
+        bbox_geometry=hawaii_bbox,
+        output_file=output_file,
+        split_area_in_tiles="2*2",
+        model_size=size,
+        cut_to_format_ratio=0.5,
+        compress=False,
+    )
+    assert isinstance(output, list)
+    assert len(output) == 4
+
+    x1, y1, _ = get_dimensions_of_stl_file(output[0])
+    x2, y2, _ = get_dimensions_of_stl_file(output[1])
+    x3, y3, _ = get_dimensions_of_stl_file(output[2])
+    x4, y4, _ = get_dimensions_of_stl_file(output[3])
+    assert x1 == size / 2
+    assert x2 == size / 2
+    assert x3 == size / 2
+    assert x4 == size / 2
+    assert y1 == size / 4
+    assert y2 == size / 4
+    assert y3 == size / 4
+    assert y4 == size / 4
+    assert x1 + x2 == size
+    assert x3 + x4 == size
+    assert y1 + y2 == size / 2
+    assert y3 + y4 == size / 2
