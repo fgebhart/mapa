@@ -20,7 +20,7 @@ from mapa.raster import (
 from mapa.stac import fetch_stac_items_for_bbox
 from mapa.stl_file import save_to_stl_file
 from mapa.tiling import get_x_y_from_tiles_format, split_array_into_tiles
-from mapa.utils import path_to_clipped_tiff
+from mapa.utils import ProgressBar, path_to_clipped_tiff
 from mapa.verification import verify_input_and_output_are_valid
 from mapa.zip import create_zip_archive
 
@@ -109,7 +109,7 @@ def _fetch_merge_and_clip_tiffs(
     bbox_geojson: dict,
     bbox_hash: str,
     allow_caching: bool,
-    progress_bar: Union[None, object] = None,
+    progress_bar: Union[None, ProgressBar] = None,
 ) -> Path:
     tiffs = fetch_stac_items_for_bbox(bbox_geojson, allow_caching, progress_bar)
     if len(tiffs) > 1:
@@ -119,7 +119,7 @@ def _fetch_merge_and_clip_tiffs(
     return clip_tiff_to_bbox(merged_tiff, bbox_geojson, bbox_hash)
 
 
-def _get_tiff_for_bbox(bbox_geojson: dict, allow_caching: bool, progress_bar: Union[None, object] = None) -> Path:
+def _get_tiff_for_bbox(bbox_geojson: dict, allow_caching: bool, progress_bar: Union[None, ProgressBar] = None) -> Path:
     bbox_hash = get_hash_of_geojson(bbox_geojson)
     if tiff_for_bbox_is_cached(bbox_hash) and allow_caching:
         log.info("🚀  using cached tiff!")
@@ -184,7 +184,8 @@ def convert_bbox_to_stl(
     allow_caching : bool, optional
         Whether caching previous downloaded GeoTIFF files should be enabled/disabled. By default True
     progress_bar : Union[None, object], optional
-        A streamlit progress bar object can be used to indicate the progress of downloading the STAC items.
+        A streamlit progress bar object can be used to indicate the progress of downloading the STAC items. By
+        default None
 
     Returns
     -------
@@ -201,8 +202,11 @@ def convert_bbox_to_stl(
 
     args = locals().copy()
     args.pop("progress_bar", None)
-
     log.info(f"⏳  converting bounding box to STL file with arguments: {args}")
+
+    if progress_bar:
+        progress_bar = ProgressBar(progress_bar=progress_bar, steps=tiles_format.x * tiles_format.y if compress else 0)
+
     path_to_tiff = _get_tiff_for_bbox(bbox_geometry, allow_caching, progress_bar)
     tiff = rio.open(path_to_tiff)
     elevation_scale = determine_elevation_scale(tiff, model_size)
@@ -233,6 +237,6 @@ def convert_bbox_to_stl(
             )
         )
     if compress:
-        return create_zip_archive(files=stl_files, output_file=f"{output_file}.zip")
+        return create_zip_archive(files=stl_files, output_file=f"{output_file}.zip", progress_bar=progress_bar)
     else:
         return stl_files[0] if len(stl_files) == 1 else stl_files

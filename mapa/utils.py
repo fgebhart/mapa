@@ -27,3 +27,14 @@ def md5_sum(path: Path) -> str:
         for chunk in iter(lambda: f.read(4096), b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
+
+
+class ProgressBar:
+    def __init__(self, progress_bar: object, steps: int = 0) -> None:
+        self.progress_bar = progress_bar  # streamlit st.progress_bar object
+        self.steps: int = steps
+        self.counter: int = 0
+
+    def step(self) -> None:
+        self.progress_bar.progress(int(100 / self.steps * (self.counter + 1)))
+        self.counter += 1

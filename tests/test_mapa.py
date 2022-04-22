@@ -155,11 +155,13 @@ def test_convert_bbox_to_stl__progress_bar(output_file, geojson_bbox_two_stac_it
     convert_bbox_to_stl(
         bbox_geometry=geojson_bbox_two_stac_items,
         output_file=output_file,
-        allow_caching=False,
+        allow_caching=False,  # TODO: allow caching to speed up test execution
         progress_bar=progress_bar,
-        compress=False,
+        split_area_in_tiles="1*2",
+        compress=True,
     )
-    assert progress_bar.progress_track == [50, 100]
+    # we expect 4 steps, 2 for fetching stac items and another 2 for compressing the tiles
+    assert progress_bar.progress_track == [25, 50, 75, 100]
 
 
 def test_mapa__index_error(output_file) -> None:
