@@ -407,3 +407,84 @@ def test_mapa__interplay_of_cut_to_format_ratio_with_tiling(output_file, hawaii_
     assert x3 + x4 == size
     assert y1 + y2 == size / 2
     assert y3 + y4 == size / 2
+
+
+def test_mapa__tiling_with_rectangular_bbox(geojson_bbox_two_stac_items, output_file, mock_max_res) -> None:
+    # using cut_to_format_ratio=None
+    size = 100
+    tiling = "2*3"
+    output = convert_bbox_to_stl(
+        bbox_geometry=geojson_bbox_two_stac_items,
+        output_file=output_file,
+        split_area_in_tiles=tiling,
+        model_size=size,
+        cut_to_format_ratio=None,
+        compress=False,
+    )
+    assert isinstance(output, list)
+    assert len(output) == 6
+
+    x1, y1, _ = get_dimensions_of_stl_file(output[0])
+    x2, y2, _ = get_dimensions_of_stl_file(output[1])
+    x3, y3, _ = get_dimensions_of_stl_file(output[2])
+    x4, y4, _ = get_dimensions_of_stl_file(output[3])
+    x5, y5, _ = get_dimensions_of_stl_file(output[4])
+    x6, y6, _ = get_dimensions_of_stl_file(output[5])
+
+    assert x1 == x2 == x3 == x4 == x5 == x6
+    assert x1 + x2 == size
+    assert x3 + x4 == size
+    assert x5 + x6 == size
+    assert y1 == y2 == y3 == y4 == y5 == y6
+    assert y1 != size
+    assert y1 != x1
+
+    # now using cut_to_format_ratio=1.0 i.e. output shape should a square
+    output = convert_bbox_to_stl(
+        bbox_geometry=geojson_bbox_two_stac_items,
+        output_file=output_file,
+        split_area_in_tiles=tiling,
+        model_size=size,
+        cut_to_format_ratio=1.0,
+        compress=False,
+    )
+
+    x1, y1, _ = get_dimensions_of_stl_file(output[0])
+    x2, y2, _ = get_dimensions_of_stl_file(output[1])
+    x3, y3, _ = get_dimensions_of_stl_file(output[2])
+    x4, y4, _ = get_dimensions_of_stl_file(output[3])
+    x5, y5, _ = get_dimensions_of_stl_file(output[4])
+    x6, y6, _ = get_dimensions_of_stl_file(output[5])
+
+    assert x1 == x2 == x3 == x4 == x5 == x6
+    assert x1 + x2 == size
+    assert x3 + x4 == size
+    assert x5 + x6 == size
+    assert y1 == y2 == y3 == y4 == y5 == y6
+    assert y1 + y2 + y3 == size
+    assert y4 + y5 + y6 == size
+
+    # now using cut_to_format_ratio=0.5 i.e. one side is half of the other side
+    output = convert_bbox_to_stl(
+        bbox_geometry=geojson_bbox_two_stac_items,
+        output_file=output_file,
+        split_area_in_tiles=tiling,
+        model_size=size,
+        cut_to_format_ratio=0.5,
+        compress=False,
+    )
+
+    x1, y1, _ = get_dimensions_of_stl_file(output[0])
+    x2, y2, _ = get_dimensions_of_stl_file(output[1])
+    x3, y3, _ = get_dimensions_of_stl_file(output[2])
+    x4, y4, _ = get_dimensions_of_stl_file(output[3])
+    x5, y5, _ = get_dimensions_of_stl_file(output[4])
+    x6, y6, _ = get_dimensions_of_stl_file(output[5])
+
+    assert x1 == x2 == x3 == x4 == x5 == x6
+    assert x1 + x2 == size
+    assert x3 + x4 == size
+    assert x5 + x6 == size
+    assert y1 == y2 == y3 == y4 == y5 == y6
+    assert y1 + y2 + y3 == size / 2
+    assert y4 + y5 + y6 == size / 2

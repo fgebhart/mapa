@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from mapa import stac
+from mapa import conf, stac
 
 
 @pytest.fixture
@@ -116,3 +116,8 @@ def mock_file_download(monkeypatch, test_tiff):
         return test_tiff
 
     monkeypatch.setattr(stac, "_download_file", _mocked_download_file)
+
+
+@pytest.fixture
+def mock_max_res(monkeypatch):
+    monkeypatch.setattr(conf, "MAXIMUM_RESOLUTION", 10)
