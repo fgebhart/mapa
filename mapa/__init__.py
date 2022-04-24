@@ -137,7 +137,7 @@ def convert_bbox_to_stl(
     z_offset: Union[None, float] = 0.0,
     z_scale: float = 1.0,
     cut_to_format_ratio: Union[None, float] = None,
-    split_area_in_tiles: str = "1*1",
+    split_area_in_tiles: str = "1x1",
     compress: bool = True,
     allow_caching: bool = True,
     progress_bar: Union[None, object] = None,
@@ -198,14 +198,15 @@ def convert_bbox_to_stl(
         raise ValueError("⛔️  ERROR: make sure to draw a rectangle on the map first!")
 
     # evaluate tile format to fail early in case of invalid input value
-    tiles_format = get_x_y_from_tiles_format(split_area_in_tiles)
+    tiles = get_x_y_from_tiles_format(split_area_in_tiles)
 
     args = locals().copy()
     args.pop("progress_bar", None)
     log.info(f"⏳  converting bounding box to STL file with arguments: {args}")
 
     if progress_bar:
-        progress_bar = ProgressBar(progress_bar=progress_bar, steps=tiles_format.x * tiles_format.y if compress else 0)
+        steps = tiles.x * tiles.y * 2 if compress else tiles.x * tiles.y
+        progress_bar = ProgressBar(progress_bar=progress_bar, steps=steps)
 
     path_to_tiff = _get_tiff_for_bbox(bbox_geometry, allow_caching, progress_bar)
     tiff = rio.open(path_to_tiff)
@@ -216,12 +217,12 @@ def convert_bbox_to_stl(
 
     desired_size = _get_desired_size(
         array=array,
-        x=model_size / tiles_format.x,
-        y=model_size / tiles_format.y,
+        x=model_size / tiles.x,
+        y=model_size / tiles.y,
         cut_to_format_ratio=cut_to_format_ratio,
     )
 
-    tiled_arrays = split_array_into_tiles(array, tiles_format)
+    tiled_arrays = split_array_into_tiles(array, tiles)
     stl_files = []
     for i, array in enumerate(tiled_arrays):
         stl_files.append(
@@ -236,6 +237,8 @@ def convert_bbox_to_stl(
                 output_file=f"{output_file}_{i+1}.stl" if len(tiled_arrays) > 1 else f"{output_file}.stl",
             )
         )
+        if progress_bar:
+            progress_bar.step()
     if compress:
         return create_zip_archive(files=stl_files, output_file=f"{output_file}.zip", progress_bar=progress_bar)
     else:

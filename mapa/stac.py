@@ -55,7 +55,7 @@ def fetch_stac_items_for_bbox(
     if n > 0:
         log.info(f"⬇️  fetching {n} stac items...")
         files = []
-        for i, item in enumerate(items):
+        for item in items:
             files.append(_get_tiff_file(item, allow_caching))
             if progress_bar:
                 progress_bar.step()

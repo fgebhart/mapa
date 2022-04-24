@@ -112,8 +112,8 @@ def test_split_array_into_tiles__rect() -> None:
 
 def test_get_x_y_from_tiles_format() -> None:
     # valid examples
-    assert get_x_y_from_tiles_format("3*3") == TileFormat(x=3, y=3)
-    assert get_x_y_from_tiles_format("2*10") == TileFormat(x=2, y=10)
+    assert get_x_y_from_tiles_format("3x3") == TileFormat(x=3, y=3)
+    assert get_x_y_from_tiles_format("2x10") == TileFormat(x=2, y=10)
 
     # invalid examples
     error_msg = "Invalid format"
@@ -121,10 +121,10 @@ def test_get_x_y_from_tiles_format() -> None:
         get_x_y_from_tiles_format("foo")
 
     with pytest.raises(ValueError, match=error_msg):
-        get_x_y_from_tiles_format("1*2*3")
+        get_x_y_from_tiles_format("1x2x3")
 
     with pytest.raises(ValueError, match=error_msg):
-        get_x_y_from_tiles_format("0*0")
+        get_x_y_from_tiles_format("0x0")
 
     with pytest.raises(ValueError, match="invalid literal for int"):
-        get_x_y_from_tiles_format("a*f")
+        get_x_y_from_tiles_format("axf")

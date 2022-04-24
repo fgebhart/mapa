@@ -151,17 +151,19 @@ def test_convert_bbox_to_stl__ensure_z_offset_is_correct(output_file, hawaii_bbo
     assert z1 > z2 > z3
 
 
-def test_convert_bbox_to_stl__progress_bar(output_file, geojson_bbox_two_stac_items, progress_bar) -> None:
+def test_convert_bbox_to_stl__progress_bar(output_file, geojson_bbox_two_stac_items, progress_bar, mock_max_res) -> None:
     convert_bbox_to_stl(
         bbox_geometry=geojson_bbox_two_stac_items,
         output_file=output_file,
         allow_caching=False,  # TODO: allow caching to speed up test execution
         progress_bar=progress_bar,
-        split_area_in_tiles="1*2",
+        split_area_in_tiles="2x2",
         compress=True,
     )
-    # we expect 4 steps, 2 for fetching stac items and another 2 for compressing the tiles
-    assert progress_bar.progress_track == [25, 50, 75, 100]
+    # we expect 10 steps, 2 for fetching stac items, 4 for generating
+    # the 4 stl files and another 4 for compressing the tiles
+    assert len(progress_bar.progress_track) == 10
+    assert progress_bar.progress_track == [11, 22, 33, 44, 55, 66, 77, 88, 99, 100]
 
 
 def test_mapa__index_error(output_file) -> None:
@@ -194,7 +196,7 @@ def test_mapa__split_area_into_tiles__success(hawaii_bbox, tmp_path, compress) -
     output = convert_bbox_to_stl(
         bbox_geometry=hawaii_bbox,
         output_file="foo",
-        split_area_in_tiles="2*2",
+        split_area_in_tiles="2x2",
         model_size=size,
         cut_to_format_ratio=1.0,
         compress=compress,
@@ -228,7 +230,7 @@ def test_mapa__split_area_into_tiles__one_by_two(hawaii_bbox, output_file) -> No
     output = convert_bbox_to_stl(
         bbox_geometry=hawaii_bbox,
         output_file=output_file,
-        split_area_in_tiles="1*2",
+        split_area_in_tiles="1x2",
         model_size=size,
         cut_to_format_ratio=1.0,
         compress=False,
@@ -249,7 +251,7 @@ def test_mapa__split_area_into_tiles__one_by_two(hawaii_bbox, output_file) -> No
     output = convert_bbox_to_stl(
         bbox_geometry=hawaii_bbox,
         output_file=output_file,
-        split_area_in_tiles="2*1",
+        split_area_in_tiles="2x1",
         model_size=size,
         cut_to_format_ratio=1.0,
         compress=False,
@@ -283,7 +285,7 @@ def test_mapa__split_area_into_tiles__area_too_small(output_file) -> None:
         convert_bbox_to_stl(
             bbox_geometry=bbox,
             output_file=output_file,
-            split_area_in_tiles="5*5",
+            split_area_in_tiles="5x5",
             model_size=100,
             z_scale=3.0,
             compress=False,
@@ -298,7 +300,7 @@ def test_mapa__cut_to_format_ratio__two_by_two(cut_to_format_ratio, output_file,
     output = convert_bbox_to_stl(
         bbox_geometry=hawaii_bbox,
         output_file=output_file,
-        split_area_in_tiles="2*2",
+        split_area_in_tiles="2x2",
         model_size=size,
         cut_to_format_ratio=cut_to_format_ratio,
         compress=False,
@@ -323,7 +325,7 @@ def test_mapa__interplay_of_cut_to_format_ratio_with_tiling(output_file, hawaii_
     output = convert_bbox_to_stl(
         bbox_geometry=hawaii_bbox,
         output_file=output_file,
-        split_area_in_tiles="1*2",
+        split_area_in_tiles="1x2",
         model_size=size,
         cut_to_format_ratio=None,
         compress=False,
@@ -343,7 +345,7 @@ def test_mapa__interplay_of_cut_to_format_ratio_with_tiling(output_file, hawaii_
     output = convert_bbox_to_stl(
         bbox_geometry=hawaii_bbox,
         output_file=output_file,
-        split_area_in_tiles="1*2",
+        split_area_in_tiles="1x2",
         model_size=size,
         cut_to_format_ratio=1.0,
         compress=False,
@@ -363,7 +365,7 @@ def test_mapa__interplay_of_cut_to_format_ratio_with_tiling(output_file, hawaii_
     output = convert_bbox_to_stl(
         bbox_geometry=hawaii_bbox,
         output_file=output_file,
-        split_area_in_tiles="1*2",
+        split_area_in_tiles="1x2",
         model_size=size,
         cut_to_format_ratio=0.5,
         compress=False,
@@ -383,7 +385,7 @@ def test_mapa__interplay_of_cut_to_format_ratio_with_tiling(output_file, hawaii_
     output = convert_bbox_to_stl(
         bbox_geometry=hawaii_bbox,
         output_file=output_file,
-        split_area_in_tiles="2*2",
+        split_area_in_tiles="2x2",
         model_size=size,
         cut_to_format_ratio=0.5,
         compress=False,
@@ -412,7 +414,7 @@ def test_mapa__interplay_of_cut_to_format_ratio_with_tiling(output_file, hawaii_
 def test_mapa__tiling_with_rectangular_bbox(geojson_bbox_two_stac_items, output_file, mock_max_res) -> None:
     # using cut_to_format_ratio=None
     size = 100
-    tiling = "2*3"
+    tiling = "2x3"
     output = convert_bbox_to_stl(
         bbox_geometry=geojson_bbox_two_stac_items,
         output_file=output_file,

@@ -36,5 +36,7 @@ class ProgressBar:
         self.counter: int = 0
 
     def step(self) -> None:
-        self.progress_bar.progress(int(100 / self.steps * (self.counter + 1)))
+        progress = 100 // (self.steps - 1) * (self.counter + 1)
+        progress = progress if progress <= 100 else 100
+        self.progress_bar.progress(progress)
         self.counter += 1
