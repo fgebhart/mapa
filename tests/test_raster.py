@@ -10,14 +10,15 @@ from mapa.raster import (
     clip_tiff_to_bbox,
     cut_array_to_format,
     determine_elevation_scale,
-    read_tiff,
     remove_empty_first_and_last_rows_and_cols,
+    tiff_to_array,
 )
 from mapa.stac import fetch_stac_items_for_bbox
 
 
-def test_read_tiff(test_tiff) -> None:
-    array = read_tiff(test_tiff)
+def test_tiff_to_2_dimensional_array(test_tiff) -> None:
+    tiff = rio.open(test_tiff)
+    array = tiff_to_array(tiff)
     assert len(array.shape) == 2
 
 
@@ -73,8 +74,8 @@ def test_clip_tiff_to_bbox(test_tiff) -> None:
         ],
     }
     clipped_tiff = clip_tiff_to_bbox(test_tiff, bbox, "foo")
-    test_array = read_tiff(test_tiff)
-    clipped_array = read_tiff(clipped_tiff)
+    test_array = tiff_to_array(rio.open(test_tiff))
+    clipped_array = tiff_to_array(rio.open(clipped_tiff))
 
     assert test_array.shape > clipped_array.shape
     overlap = np.isin(clipped_array, test_array)

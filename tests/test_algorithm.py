@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 from mapa.algorithm import (
+    ModelSize,
     _compute_triangles_of_3d_surface,
     _compute_triangles_of_body_side,
     _compute_triangles_of_bottom,
@@ -46,10 +47,10 @@ def test_compute_triangles_of_3d_surface() -> None:
     max_x, max_y = array.shape
     raster = _create_raster(array, max_x, max_y)
     max_x, max_y = array.shape
-    target_size = 100
-    x_scale = target_size / max_x
-    y_scale = target_size / max_x
-    z_scale = target_size / 6000
+    model_size = 100
+    x_scale = model_size / max_x
+    y_scale = model_size / max_x
+    z_scale = model_size / 6000
     triangles = _compute_triangles_of_3d_surface(
         raster=raster,
         array=array,
@@ -198,7 +199,7 @@ def test_compute_all_triangles__min_occurrences() -> None:
         ]
     )
     triangles = compute_all_triangles(
-        array, target_size=200, z_offset=1.0, z_scale=2.0, elevation_scale=10.0, cut_to_format_ratio=None
+        array, desired_size=ModelSize(200, 200), z_offset=1.0, z_scale=2.0, elevation_scale=10.0
     )
 
     # verify every every point occurs at least 4 times

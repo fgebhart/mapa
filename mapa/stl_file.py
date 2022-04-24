@@ -39,5 +39,6 @@ def _find_dimensions_of_mesh(mesh_obj) -> Tuple[float]:
 
 
 def get_dimensions_of_stl_file(stl_path: Path) -> Tuple[float]:
+    assert Path(stl_path).suffix == ".stl", "can compute dimensions of stl files only!"
     main_body = mesh.Mesh.from_file(stl_path)
     return _find_dimensions_of_mesh(main_body)

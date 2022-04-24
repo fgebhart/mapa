@@ -9,7 +9,7 @@ from pystac_client import Client
 
 from mapa import conf
 from mapa.exceptions import NoSTACItemFound
-from mapa.utils import TMPDIR
+from mapa.utils import TMPDIR, ProgressBar
 
 log = logging.getLogger(__name__)
 
@@ -43,20 +43,22 @@ def _get_tiff_file(stac_item: Item, allow_caching: bool) -> Path:
 
 
 def fetch_stac_items_for_bbox(
-    geojson: dict, allow_caching: bool, progress_bar: Union[None, object] = None
+    geojson: dict, allow_caching: bool, progress_bar: Union[None, ProgressBar] = None
 ) -> List[Path]:
     bbox = _turn_geojson_into_bbox(geojson)
     client = Client.open(conf.PLANETARY_COMPUTER_API_URL, ignore_conformance=True)
     search = client.search(collections=[conf.PLANETARY_COMPUTER_COLLECTION], bbox=bbox)
     items = list(search.get_items())
     n = len(items)
+    if progress_bar:
+        progress_bar.steps += n
     if n > 0:
         log.info(f"⬇️  fetching {n} stac items...")
         files = []
-        for i, item in enumerate(items):
+        for item in items:
             files.append(_get_tiff_file(item, allow_caching))
             if progress_bar:
-                progress_bar.progress(int(100 / n * (i + 1)))
+                progress_bar.step()
         return files
     else:
         raise NoSTACItemFound("Could not find the desired STAC item for the given bounding box.")

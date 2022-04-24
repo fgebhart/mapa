@@ -1,7 +1,7 @@
 import json
 from hashlib import md5
 
-from mapa.utils import _path_to_clipped_tiff
+from mapa.utils import path_to_clipped_tiff
 
 
 def get_hash_of_geojson(bbox_geojson: dict) -> str:
@@ -9,4 +9,4 @@ def get_hash_of_geojson(bbox_geojson: dict) -> str:
 
 
 def tiff_for_bbox_is_cached(bbox_hash: str) -> bool:
-    return (_path_to_clipped_tiff(bbox_hash)).is_file()
+    return (path_to_clipped_tiff(bbox_hash)).is_file()
