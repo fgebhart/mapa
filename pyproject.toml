@@ -20,7 +20,7 @@ python = ">=3.8,<3.11"
 click = "^8.0.3"
 numpy = "^1.21"
 numba = "^0.55.1"
-notebook = "^6.4.8"
+notebook = "^6.4.12"
 ipyleaflet = "0.13.3"       # pinned since newer versions use questionable edit feature for rectangles
 pystac-client = "^0.3.2"
 rasterio = "^1.2.10"
