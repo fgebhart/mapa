@@ -176,8 +176,8 @@ def convert_bbox_to_stl(
         try to cut the shorter side of the input tiff. By default None
     split_area_in_tiles : str, optional
         Split the selected bounding box into tiles with this option. The allowed format of a given string is
-        "n*m" e.g. "1*1`, "2*3", "4*4" or similar, where "1*1" would not split at all and result in only
-        one stl file. If an allowed tile format is specified, `n*m` stl files will be computed. By default "1*1"
+        "nxm" e.g. "1x1", "2x3", "4x4" or similar, where "1x1" would not split at all and result in only
+        one stl file. If an allowed tile format is specified, `nxm` stl files will be computed. By default "1x1"
     compress : bool, optional
         If enabled, the output stl file(s) will be compressed to a zip file. Compressing is recommended as it
         reduces the data volume of typical stl files by a factor of ~4.
