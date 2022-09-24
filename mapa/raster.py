@@ -106,7 +106,9 @@ def _get_coordinate_of_pixel(row: int, col: int, tiff: DatasetReader) -> Tuple[f
     meta = tiff.meta
     window = Window(0, 0, meta["width"], meta["height"])
     meta["transform"] = rio.windows.transform(window, tiff.transform)
-    return rio.transform.xy(meta["transform"], row, col, offset="center")
+    x, y = rio.transform.xy(meta["transform"], row, col, offset="center")
+    # swap lat and lon because that is the order expected by haversine
+    return (y, x)
 
 
 def determine_elevation_scale(tiff: DatasetReader, model_size: int) -> float:
