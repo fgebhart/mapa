@@ -238,7 +238,7 @@ def test_determine_z_scale(geojson_bbox, mock_file_download) -> None:
     tiff_path = fetch_stac_items_for_bbox(geojson_bbox, allow_caching=False)
     tiff = rio.open(tiff_path[0])
     scale = determine_elevation_scale(tiff, model_size=200)
-    expected_scale = 0.0013001543499978835
+    expected_scale = 0.0013862643986006134
     assert expected_scale == scale
 
 
@@ -246,14 +246,14 @@ def test__get_coordinate_of_pixel(test_tiff) -> None:
     tiff = rio.open(test_tiff)
     c1 = _get_coordinate_of_pixel(0, 0, tiff)
     c2 = _get_coordinate_of_pixel(0, 1, tiff)
-    assert c1 == (-156.14972920662672, 20.30046320308474)
-    assert c2 == (-156.13176290094432, 20.30046320308474)
+    assert c1 == (20.30046320308474, -156.14972920662672)
+    assert c2 == (20.30046320308474, -156.13176290094432)
     assert c1 != c2
-    assert haversine(c1, c2) == 1.997764801854062
+    assert haversine(c1, c2) == 1.873675897353747
 
     c3 = _get_coordinate_of_pixel(0, 0, tiff)
     c4 = _get_coordinate_of_pixel(0, 80, tiff)
-    assert haversine(c3, c4) == 159.82118414828818
+    assert haversine(c3, c4) == 149.89359874800192
 
 
 def test__cut_array_to_rectangular_shape() -> None:
