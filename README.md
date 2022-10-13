@@ -27,7 +27,7 @@ Certainly the easiest way to interact with `mapa` is to use the streamlit web ap
 access it via your browser. It is based on the [mapa-streamlit repo](https://github.com/fgebhart/mapa-streamlit) and can
 be accessed at:
 
-https://share.streamlit.io/fgebhart/mapa-streamlit/main/app.py
+https://3dmaps.streamlitapp.com
 
 Note, that the streamlit web app however, does not use the maximal available resolution of the ALOS DEM GeoTIFFs, as it
 would take too much time and cloud resources to compute STL files of e.g. multiple GBs. If you are keen in getting STL
