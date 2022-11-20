@@ -9,7 +9,7 @@ from pystac_client import Client
 
 from mapa import conf
 from mapa.exceptions import NoSTACItemFound
-from mapa.utils import TMPDIR, ProgressBar
+from mapa.utils import ProgressBar
 
 log = logging.getLogger(__name__)
 
@@ -32,18 +32,18 @@ def _turn_geojson_into_bbox(geojson_bbox: dict) -> List[float]:
     return _bbox(list(geojson.utils.coords(geojson.Polygon(coordinates))))
 
 
-def _get_tiff_file(stac_item: Item, allow_caching: bool) -> Path:
-    tiff = TMPDIR() / f"{stac_item.id}.tiff"
+def _get_tiff_file(stac_item: Item, allow_caching: bool, cache_dir: Path, count: int, max: int) -> Path:
+    tiff = cache_dir / f"{stac_item.id}.tiff"
     if tiff.is_file() and allow_caching:
-        log.info(f"🚀  using cached stac item {stac_item.id}")
+        log.info(f"🚀  {count}/{max} using cached stac item {stac_item.id}")
         return tiff
     else:
-        log.info(f"🏞  downloading stac item {stac_item.id}")
+        log.info(f"🏞  {count}/{max} downloading stac item {stac_item.id}")
         return _download_file(stac_item.assets["data"].href, tiff)
 
 
 def fetch_stac_items_for_bbox(
-    geojson: dict, allow_caching: bool, progress_bar: Union[None, ProgressBar] = None
+    geojson: dict, allow_caching: bool, cache_dir: Path, progress_bar: Union[None, ProgressBar] = None
 ) -> List[Path]:
     bbox = _turn_geojson_into_bbox(geojson)
     client = Client.open(conf.PLANETARY_COMPUTER_API_URL, ignore_conformance=True)
@@ -55,8 +55,8 @@ def fetch_stac_items_for_bbox(
     if n > 0:
         log.info(f"⬇️  fetching {n} stac items...")
         files = []
-        for item in items:
-            files.append(_get_tiff_file(item, allow_caching))
+        for cnt, item in enumerate(items):
+            files.append(_get_tiff_file(item, allow_caching, cache_dir, cnt + 1, n))
             if progress_bar:
                 progress_bar.step()
         return files

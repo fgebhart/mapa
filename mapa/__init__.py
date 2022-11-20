@@ -20,7 +20,7 @@ from mapa.raster import (
 from mapa.stac import fetch_stac_items_for_bbox
 from mapa.stl_file import save_to_stl_file
 from mapa.tiling import get_x_y_from_tiles_format, split_array_into_tiles
-from mapa.utils import ProgressBar, path_to_clipped_tiff
+from mapa.utils import TMPDIR, ProgressBar, path_to_clipped_tiff
 from mapa.verification import verify_input_and_output_are_valid
 from mapa.zip import create_zip_archive
 
@@ -109,23 +109,26 @@ def _fetch_merge_and_clip_tiffs(
     bbox_geojson: dict,
     bbox_hash: str,
     allow_caching: bool,
+    cache_dir: Path,
     progress_bar: Union[None, ProgressBar] = None,
 ) -> Path:
-    tiffs = fetch_stac_items_for_bbox(bbox_geojson, allow_caching, progress_bar)
+    tiffs = fetch_stac_items_for_bbox(bbox_geojson, allow_caching, cache_dir, progress_bar)
     if len(tiffs) > 1:
-        merged_tiff = merge_tiffs(tiffs, bbox_hash)
+        merged_tiff = merge_tiffs(tiffs, bbox_hash, cache_dir)
     else:
         merged_tiff = tiffs[0]
-    return clip_tiff_to_bbox(merged_tiff, bbox_geojson, bbox_hash)
+    return clip_tiff_to_bbox(merged_tiff, bbox_geojson, bbox_hash, cache_dir)
 
 
-def _get_tiff_for_bbox(bbox_geojson: dict, allow_caching: bool, progress_bar: Union[None, ProgressBar] = None) -> Path:
+def _get_tiff_for_bbox(
+    bbox_geojson: dict, allow_caching: bool, cache_dir: Path, progress_bar: Union[None, ProgressBar] = None
+) -> Path:
     bbox_hash = get_hash_of_geojson(bbox_geojson)
-    if tiff_for_bbox_is_cached(bbox_hash) and allow_caching:
+    if tiff_for_bbox_is_cached(bbox_hash, cache_dir) and allow_caching:
         log.info("🚀  using cached tiff!")
-        return path_to_clipped_tiff(bbox_hash)
+        return path_to_clipped_tiff(bbox_hash, cache_dir)
     else:
-        return _fetch_merge_and_clip_tiffs(bbox_geojson, bbox_hash, allow_caching, progress_bar)
+        return _fetch_merge_and_clip_tiffs(bbox_geojson, bbox_hash, allow_caching, cache_dir, progress_bar)
 
 
 def convert_bbox_to_stl(
@@ -140,6 +143,7 @@ def convert_bbox_to_stl(
     split_area_in_tiles: str = "1x1",
     compress: bool = True,
     allow_caching: bool = True,
+    cache_dir: Union[Path, str] = TMPDIR(),
     progress_bar: Union[None, object] = None,
 ) -> Union[Path, List[Path]]:
     """
@@ -183,6 +187,9 @@ def convert_bbox_to_stl(
         reduces the data volume of typical stl files by a factor of ~4.
     allow_caching : bool, optional
         Whether caching previous downloaded GeoTIFF files should be enabled/disabled. By default True
+    cache_dir: Union[Path, str]
+        Path to a directory which should be used as local cache. This is helpful when intermediary tiff files
+        should be persisted even after the temp directory gets cleaned-up by e.g. a restart. By default TMPDIR
     progress_bar : Union[None, object], optional
         A streamlit progress bar object can be used to indicate the progress of downloading the STAC items. By
         default None
@@ -208,7 +215,7 @@ def convert_bbox_to_stl(
         steps = tiles.x * tiles.y * 2 if compress else tiles.x * tiles.y
         progress_bar = ProgressBar(progress_bar=progress_bar, steps=steps)
 
-    path_to_tiff = _get_tiff_for_bbox(bbox_geometry, allow_caching, progress_bar)
+    path_to_tiff = _get_tiff_for_bbox(bbox_geometry, allow_caching, Path(cache_dir), progress_bar)
     tiff = rio.open(path_to_tiff)
     elevation_scale = determine_elevation_scale(tiff, model_size)
     array = tiff_to_array(tiff)
