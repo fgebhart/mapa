@@ -16,7 +16,7 @@ from mapa.utils import path_to_clipped_tiff, path_to_merged_tiff
 log = logging.getLogger(__name__)
 
 
-def clip_tiff_to_bbox(input_tiff: Path, bbox_geometry: dict, bbox_hash: str) -> Path:
+def clip_tiff_to_bbox(input_tiff: Path, bbox_geometry: dict, bbox_hash: str, cache_dir: Path) -> Path:
     log.debug("🔪  clipping region of interest...")
     data = rio.open(input_tiff)
     out_img, out_transform = mask(data, shapes=[bbox_geometry], crop=True)
@@ -30,7 +30,7 @@ def clip_tiff_to_bbox(input_tiff: Path, bbox_geometry: dict, bbox_hash: str) -> 
             "crs": data.crs,
         }
     )
-    clipped_tiff = path_to_clipped_tiff(bbox_hash)
+    clipped_tiff = path_to_clipped_tiff(bbox_hash, cache_dir)
     with rio.open(clipped_tiff, "w", **out_meta) as file:
         file.write(out_img)
     return clipped_tiff
@@ -126,7 +126,7 @@ def determine_elevation_scale(tiff: DatasetReader, model_size: int) -> float:
     return one_meter_in_model
 
 
-def merge_tiffs(tiffs: List[Path], bbox_hash: str) -> Path:
+def merge_tiffs(tiffs: List[Path], bbox_hash: str, cache_dir: Path) -> Path:
     datasets = []
     for tiff in tiffs:
         data = rio.open(tiff)
@@ -142,7 +142,7 @@ def merge_tiffs(tiffs: List[Path], bbox_hash: str) -> Path:
             "crs": data.crs,
         }
     )
-    tiff = path_to_merged_tiff(bbox_hash)
+    tiff = path_to_merged_tiff(bbox_hash, cache_dir)
     with rio.open(tiff, "w", **out_meta) as dest:
         dest.write(mosaic)
     return tiff

@@ -1,4 +1,5 @@
 from mapa.stac import _download_file, _turn_geojson_into_bbox, fetch_stac_items_for_bbox
+from mapa.utils import TMPDIR
 
 
 def test__turn_geojson_into_bbox(geojson_bbox):
@@ -18,7 +19,7 @@ def test_fetch_stac_items_for_bbox(mock_file_download):
             ]
         ],
     }
-    tiffs = fetch_stac_items_for_bbox(geojson=multiple_stac_items_bbox, allow_caching=False)
+    tiffs = fetch_stac_items_for_bbox(geojson=multiple_stac_items_bbox, allow_caching=False, cache_dir=TMPDIR())
     assert len(tiffs) == 2
 
 

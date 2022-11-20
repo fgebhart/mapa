@@ -138,3 +138,4 @@ dmypy.json
 todo.md
 alos_dem_stac.tiff
 *.zip
+cache/

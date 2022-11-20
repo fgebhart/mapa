@@ -3,6 +3,7 @@
     "python.linting.enabled": true,
     "cSpell.words": [
         "alos",
+        "geotiff",
         "ipyleaflet",
         "mapa",
         "ndarray",

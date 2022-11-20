@@ -14,6 +14,7 @@ from mapa.raster import (
     tiff_to_array,
 )
 from mapa.stac import fetch_stac_items_for_bbox
+from mapa.utils import TMPDIR
 
 
 def test_tiff_to_2_dimensional_array(test_tiff) -> None:
@@ -58,7 +59,7 @@ def test_clip_tiff_to_bbox(test_tiff) -> None:
         ],
     }
     with pytest.raises(ValueError, match="Input shapes do not overlap raster."):
-        clip_tiff_to_bbox(test_tiff, bbox, "foo")
+        clip_tiff_to_bbox(test_tiff, bbox, "foo", cache_dir=TMPDIR())
 
     # bbox does overlap tiff raster coordinates
     bbox = {
@@ -73,7 +74,7 @@ def test_clip_tiff_to_bbox(test_tiff) -> None:
             ]
         ],
     }
-    clipped_tiff = clip_tiff_to_bbox(test_tiff, bbox, "foo")
+    clipped_tiff = clip_tiff_to_bbox(test_tiff, bbox, "foo", cache_dir=TMPDIR())
     test_array = tiff_to_array(rio.open(test_tiff))
     clipped_array = tiff_to_array(rio.open(clipped_tiff))
 
@@ -235,7 +236,7 @@ def test_remove_empty_first_and_last_rows_and_cols() -> None:
 
 
 def test_determine_z_scale(geojson_bbox, mock_file_download) -> None:
-    tiff_path = fetch_stac_items_for_bbox(geojson_bbox, allow_caching=False)
+    tiff_path = fetch_stac_items_for_bbox(geojson_bbox, allow_caching=False, cache_dir=TMPDIR())
     tiff = rio.open(tiff_path[0])
     scale = determine_elevation_scale(tiff, model_size=200)
     expected_scale = 0.0013862643986006134

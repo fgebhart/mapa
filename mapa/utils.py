@@ -13,12 +13,12 @@ def TMPDIR() -> Path:
     return tmpdir
 
 
-def path_to_merged_tiff(bbox_hash: str) -> Path:
-    return TMPDIR() / f"merged_{bbox_hash}.tiff"
+def path_to_merged_tiff(bbox_hash: str, cache_dir: Path) -> Path:
+    return cache_dir / f"merged_{bbox_hash}.tiff"
 
 
-def path_to_clipped_tiff(bbox_hash: str) -> Path:
-    return TMPDIR() / f"clipped_{bbox_hash}.tiff"
+def path_to_clipped_tiff(bbox_hash: str, cache_dir: Path) -> Path:
+    return cache_dir / f"clipped_{bbox_hash}.tiff"
 
 
 def md5_sum(path: Path) -> str:

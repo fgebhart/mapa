@@ -1,4 +1,5 @@
 import math
+import time
 from pathlib import Path
 from zipfile import ZipFile
 
@@ -8,7 +9,7 @@ import rasterio as rio
 from mapa import _fetch_merge_and_clip_tiffs, _get_tiff_for_bbox, caching, convert_bbox_to_stl
 from mapa.stac import _turn_geojson_into_bbox
 from mapa.stl_file import get_dimensions_of_stl_file
-from mapa.utils import path_to_clipped_tiff, path_to_merged_tiff
+from mapa.utils import TMPDIR, path_to_clipped_tiff, path_to_merged_tiff
 
 
 def test_create_stl_for_bbox__success(output_file, hawaii_bbox) -> None:
@@ -93,17 +94,18 @@ def test_convert_bbox_to_stl__verify_x_y_dimensions(output_file, hawaii_bbox) ->
 
 
 def test__get_tiff_for_bbox(hawaii_bbox) -> None:
-    tiff = _get_tiff_for_bbox(hawaii_bbox, allow_caching=False)
+    tiff = _get_tiff_for_bbox(hawaii_bbox, allow_caching=False, cache_dir=TMPDIR())
     assert tiff.is_file()
 
 
 def test__fetch_merge_and_clip_tiffs(geojson_bbox_two_stac_items) -> None:
+    cache_dir = TMPDIR()
     bbox_hash = caching.get_hash_of_geojson(geojson_bbox_two_stac_items)
     assert isinstance(bbox_hash, str)
-    tiff = _fetch_merge_and_clip_tiffs(geojson_bbox_two_stac_items, bbox_hash, allow_caching=True)
+    tiff = _fetch_merge_and_clip_tiffs(geojson_bbox_two_stac_items, bbox_hash, allow_caching=True, cache_dir=cache_dir)
     assert tiff.is_file()
-    assert path_to_merged_tiff(bbox_hash).is_file()
-    assert path_to_clipped_tiff(bbox_hash).is_file()
+    assert path_to_merged_tiff(bbox_hash, cache_dir=cache_dir).is_file()
+    assert path_to_clipped_tiff(bbox_hash, cache_dir=cache_dir).is_file()
 
     # verify coordinates of resulting tiff is in line with the coordinates of the input bbox
     bbox = _turn_geojson_into_bbox(geojson_bbox_two_stac_items)
@@ -182,7 +184,7 @@ def test_mapa__index_error(output_file) -> None:
     }
     # converting such a bbox into an STL caused an index error when trying to drop first/last row/col, but the fix to
     # this avoids dropping rows and cols in case there are not sufficient rows/cols. Thus the computing such a STL should
-    # work out of the box, even thouhgt a STL with only one elevation data point is of course questionable.
+    # work out of the box, even though a STL with only one elevation data point is of course questionable.
     convert_bbox_to_stl(
         bbox_geometry=bbox,
         output_file=output_file,
@@ -490,3 +492,34 @@ def test_mapa__tiling_with_rectangular_bbox(geojson_bbox_two_stac_items, output_
     assert y1 == y2 == y3 == y4 == y5 == y6
     assert y1 + y2 + y3 == size / 2
     assert y4 + y5 + y6 == size / 2
+
+
+def test_custom_caching_path(output_file, geojson_bbox, tmp_path) -> None:
+    start = time.time()
+    output_file = convert_bbox_to_stl(
+        bbox_geometry=geojson_bbox,
+        output_file=output_file,
+        allow_caching=True,
+        cache_dir=tmp_path,
+        compress=False,
+    )
+    duration_uncached = time.time() - start
+    assert output_file.is_file()
+
+    start = time.time()
+    output_file = convert_bbox_to_stl(
+        bbox_geometry=geojson_bbox,
+        output_file=output_file,
+        allow_caching=True,
+        cache_dir=tmp_path,
+        compress=False,
+    )
+    duration_cached = time.time() - start
+    assert output_file.is_file()
+
+    # show second attempt is significantly faster because of caching
+    assert duration_cached < duration_uncached / 2
+
+    # verify certain files are present in the custom cache_dir
+    assert len([stl for stl in Path(tmp_path).glob("*.stl")]) == 2
+    assert len([stl for stl in Path(tmp_path).glob("*.tiff")]) == 2
