@@ -30,7 +30,7 @@ geojson = "^2.5.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.0.0"
-ipython = "^8.0.1"
+ipython = "^8.10.0"
 ipdb = "^0.13.9"
 flake8 = "^4.0.1"
 black = "^22.3.0"
