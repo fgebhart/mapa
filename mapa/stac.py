@@ -48,7 +48,7 @@ def fetch_stac_items_for_bbox(
     bbox = _turn_geojson_into_bbox(geojson)
     client = Client.open(conf.PLANETARY_COMPUTER_API_URL, ignore_conformance=True)
     search = client.search(collections=[conf.PLANETARY_COMPUTER_COLLECTION], bbox=bbox)
-    items = list(search.get_items())
+    items = list(search.items())
     n = len(items)
     if progress_bar:
         progress_bar.steps += n
