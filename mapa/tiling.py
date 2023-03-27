@@ -11,7 +11,6 @@ class TileFormat:
 
 
 def split_array_into_tiles(array: np.ndarray, tiles_format: TileFormat) -> List[np.ndarray]:
-
     x, y = array.shape
     if tiles_format.x > x or tiles_format.y > y:
         raise ValueError("Input array is too small to be split into tiles.")

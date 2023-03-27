@@ -449,7 +449,6 @@ def compute_all_triangles(
     z_scale: float,
     elevation_scale: float,
 ) -> np.ndarray:
-
     max_x, max_y = array.shape
 
     log.debug("🗺  creating base raster for tiff...")
