@@ -58,7 +58,7 @@ def remove_empty_first_and_last_rows_and_cols(array: npt.ArrayLike) -> np.ndarra
     return array
 
 
-def _cut_array_to_square(array: npt.ArrayLike) -> np.ndarray:
+def cut_array_to_square(array: npt.ArrayLike) -> np.ndarray:
     rows, cols = array.shape
     if rows > cols:
         diff = rows - cols
@@ -69,37 +69,6 @@ def _cut_array_to_square(array: npt.ArrayLike) -> np.ndarray:
         return array[:, :-diff]
     else:
         return array
-
-
-def _cut_array_to_rectangular_shape(array: npt.ArrayLike, cut_to_format_ratio: float) -> np.ndarray:
-    rows, cols = array.shape
-    if rows / cols == cut_to_format_ratio or cols / rows == cut_to_format_ratio:
-        # input array has already desired format ratio
-        return array
-    elif rows > cols:
-        # cut cols
-        desired_n_cols = int(rows * cut_to_format_ratio)
-        return array[:, :desired_n_cols]
-    elif cols > rows:
-        # cut rows
-        desired_n_rows = int(cols * cut_to_format_ratio)
-        return array[:desired_n_rows, :]
-    else:
-        # cut cols anyway
-        desired_n_cols = int(rows * cut_to_format_ratio)
-        return array[:, :desired_n_cols]
-
-
-def cut_array_to_format(array: npt.ArrayLike, cut_to_format_ratio: float) -> np.ndarray:
-    if cut_to_format_ratio == 1.0:
-        return _cut_array_to_square(array)
-    if cut_to_format_ratio == 0.0:
-        raise ValueError("Cannot cut array to format with ratio 0.0. Choose a format ratio between 0.0 and 1.0")
-    else:
-        if cut_to_format_ratio > 1.0:
-            # ensure ratio is between 0.0 and 1.0 and transpose ratio
-            cut_to_format_ratio = cut_to_format_ratio**-1
-        return _cut_array_to_rectangular_shape(array, cut_to_format_ratio)
 
 
 def _get_coordinate_of_pixel(row: int, col: int, tiff: DatasetReader) -> Tuple[float]:

@@ -48,14 +48,11 @@ log = logging.getLogger(__name__)
 )
 @click.option("--demo", is_flag=True, help="Converts a demo tif of Hawaii into a STL file.")
 @click.option(
-    "--cut-to-format-ratio",
-    default=None,
+    "--ensure-squared",
+    is_flag=True,
     help=(
-        "Cut the input tiff file to a specified format. Set to `1` if you want the output model to be squared. Set to "
-        "`0.5` if you want one side to be half the length of the other side. Omit this flag to keep the input format. "
-        "This option is particularly useful when an exact output format ratio is required for example when planning to "
-        "put the 3d printed model into a picture frame. Using this option will always try to cut the shorter side of "
-        "the input tiff."
+        "Flag to toggle whether the output model should be squared in x- and y-dimension. "
+        "When enabled it will remove pixels from one side to ensure same length for both sides."
     ),
 )
 @click.version_option()
@@ -68,7 +65,7 @@ def dem2stl(
     demo: bool = False,
     as_ascii: bool = False,
     model_size: int = conf.DEFAULT_MODEL_OUTPUT_SIZE_IN_MM,
-    cut_to_format_ratio: Union[None, float] = None,
+    ensure_squared: bool = False,
 ) -> None:
     if demo is False and input is None:
         log.error("💥  Either of --input or --demo is required, try --help.")
@@ -81,7 +78,7 @@ def dem2stl(
         max_res = True
         z_scale = 2.5
 
-    convert_tiff_to_stl(input, as_ascii, model_size, output, max_res, z_offset, z_scale, cut_to_format_ratio)
+    convert_tiff_to_stl(input, as_ascii, model_size, output, max_res, z_offset, z_scale, ensure_squared)
 
 
 @click.command(help="🗺 Draw a bounding box on a map and turn it into a STL file 🗺")

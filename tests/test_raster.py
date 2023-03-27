@@ -4,11 +4,9 @@ import rasterio as rio
 from haversine import haversine
 
 from mapa.raster import (
-    _cut_array_to_rectangular_shape,
-    _cut_array_to_square,
     _get_coordinate_of_pixel,
     clip_tiff_to_bbox,
-    cut_array_to_format,
+    cut_array_to_square,
     determine_elevation_scale,
     remove_empty_first_and_last_rows_and_cols,
     tiff_to_array,
@@ -27,20 +25,20 @@ def test_cut_array_to_square() -> None:
     # test input square, shape should not change
     square = np.random.random((10, 10))
     assert square.shape == (10, 10)
-    result = _cut_array_to_square(square)
+    result = cut_array_to_square(square)
     assert result.shape == (10, 10)
     np.testing.assert_array_equal(square, result)
 
     # test non square rect with more rows than cols
     rect = np.random.random((10, 5))
     assert rect.shape == (10, 5)
-    result = _cut_array_to_square(rect)
+    result = cut_array_to_square(rect)
     assert result.shape == (5, 5)
 
     # test non square rect with more cols than rows
     rect = np.random.random((2, 4))
     assert rect.shape == (2, 4)
-    result = _cut_array_to_square(rect)
+    result = cut_array_to_square(rect)
     assert result.shape == (2, 2)
 
 
@@ -255,78 +253,3 @@ def test__get_coordinate_of_pixel(test_tiff) -> None:
     c3 = _get_coordinate_of_pixel(0, 0, tiff)
     c4 = _get_coordinate_of_pixel(0, 80, tiff)
     assert haversine(c3, c4) == 149.89359874800192
-
-
-def test__cut_array_to_rectangular_shape() -> None:
-    # test array which does already have desired output ratio
-    arr = np.ones((2, 3))
-    ratio = 2 / 3
-    result = _cut_array_to_rectangular_shape(array=arr, cut_to_format_ratio=ratio)
-    np.testing.assert_array_equal(arr, result)
-
-    result = _cut_array_to_rectangular_shape(array=arr, cut_to_format_ratio=3 / 2)
-    np.testing.assert_array_equal(arr, result)
-
-    # test array which has less cols than rows
-    ratio = 1 / 3
-    arr = np.ones((3, 2))
-    expected = np.ones((3, 1))
-    result = _cut_array_to_rectangular_shape(array=arr, cut_to_format_ratio=ratio)
-    np.testing.assert_array_equal(expected, result)
-
-    # test array which has less rows than cols
-    ratio = 1 / 3
-    arr = np.ones((2, 3))
-    expected = np.ones((1, 3))
-    result = _cut_array_to_rectangular_shape(array=arr, cut_to_format_ratio=ratio)
-    np.testing.assert_array_equal(expected, result)
-
-
-def test_cut_array_to_format() -> None:
-    # input is square and desired output ratio corresponds to square
-    ratio = 1.0
-    arr = np.ones((3, 3))
-    result = cut_array_to_format(array=arr, cut_to_format_ratio=ratio)
-    np.testing.assert_array_equal(arr, result)
-
-    # input is rectangular and desired output ratio is square
-    ratio = 1.0
-    arr = np.ones((3, 4))
-    expected = np.ones((3, 3))
-    result = cut_array_to_format(array=arr, cut_to_format_ratio=ratio)
-    np.testing.assert_array_equal(expected, result)
-
-    # input rectangular but already in desired output ratio
-    ratio = 3 / 2
-    arr = np.ones((3, 2))
-    expected = np.ones((3, 2))
-    result = cut_array_to_format(array=arr, cut_to_format_ratio=ratio)
-    np.testing.assert_array_equal(expected, result)
-
-    # same behavior is achieved when input ratio is transposed
-    ratio = 2 / 3
-    arr = np.ones((3, 2))
-    expected = np.ones((3, 2))
-    result = cut_array_to_format(array=arr, cut_to_format_ratio=ratio)
-    np.testing.assert_array_equal(expected, result)
-
-    # number of rows are less than number of cols, thus rows are cut to achieve the desired output ratio
-    ratio = 1 / 3
-    arr = np.ones((2, 3))
-    expected = np.ones((1, 3))
-    result = cut_array_to_format(array=arr, cut_to_format_ratio=ratio)
-    np.testing.assert_array_equal(expected, result)
-
-    # number of cols are less than number of rows, thus cols are cut ro achieve the desired output radio
-    ratio = 3 / 5
-    arr = np.ones((10, 9))
-    expected = np.ones((10, 6))
-    result = cut_array_to_format(array=arr, cut_to_format_ratio=ratio)
-    np.testing.assert_array_equal(expected, result)
-
-    # same for ratio transposed
-    ratio = 5 / 3
-    arr = np.ones((10, 9))
-    expected = np.ones((10, 6))
-    result = cut_array_to_format(array=arr, cut_to_format_ratio=ratio)
-    np.testing.assert_array_equal(expected, result)

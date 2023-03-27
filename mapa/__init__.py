@@ -11,7 +11,7 @@ from mapa.algorithm import ModelSize, compute_all_triangles, reduce_resolution
 from mapa.caching import get_hash_of_geojson, tiff_for_bbox_is_cached
 from mapa.raster import (
     clip_tiff_to_bbox,
-    cut_array_to_format,
+    cut_array_to_square,
     determine_elevation_scale,
     merge_tiffs,
     remove_empty_first_and_last_rows_and_cols,
@@ -64,9 +64,9 @@ def convert_array_to_stl(
     return Path(output_file)
 
 
-def _get_desired_size(array: np.ndarray, x: float, y: float, cut_to_format_ratio: Union[None, float]) -> ModelSize:
-    if cut_to_format_ratio:
-        return ModelSize(x=x, y=y * cut_to_format_ratio)
+def _get_desired_size(array: np.ndarray, x: float, y: float, ensure_squared: bool) -> ModelSize:
+    if ensure_squared:
+        return ModelSize(x=x, y=y)
     else:
         rows, cols = array.shape
         return ModelSize(x=x, y=y / rows * cols)
@@ -80,7 +80,7 @@ def convert_tiff_to_stl(
     max_res: bool,
     z_offset: Union[None, float],
     z_scale: float,
-    cut_to_format_ratio: Union[None, float],
+    ensure_squared: bool = False,
 ) -> Path:
 
     output_file = verify_input_and_output_are_valid(input=input_file, output=output_file)
@@ -89,9 +89,9 @@ def convert_tiff_to_stl(
     elevation_scale = determine_elevation_scale(tiff, model_size)
     array = tiff_to_array(tiff)
 
-    if cut_to_format_ratio:
-        array = cut_array_to_format(array, cut_to_format_ratio)
-    desired_size = _get_desired_size(array=array, x=model_size, y=model_size, cut_to_format_ratio=cut_to_format_ratio)
+    if ensure_squared:
+        array = cut_array_to_square(array)
+    desired_size = _get_desired_size(array=array, x=model_size, y=model_size, ensure_squared=ensure_squared)
 
     return convert_array_to_stl(
         array=array,
@@ -139,7 +139,7 @@ def convert_bbox_to_stl(
     max_res: bool = False,
     z_offset: Union[None, float] = 0.0,
     z_scale: float = 1.0,
-    cut_to_format_ratio: Union[None, float] = None,
+    ensure_squared: bool = False,
     split_area_in_tiles: str = "1x1",
     compress: bool = True,
     allow_caching: bool = True,
@@ -172,12 +172,9 @@ def convert_bbox_to_stl(
         By default 0.0
     z_scale : float, optional
         Value to be multiplied to the z-axis elevation data to scale up the height of the model. By default 1.0
-    cut_to_format_ratio : Union[None, float], optional
-        Cut the input tiff file to a specified format. Set to `1` if you want the output model to be squared.
-        Set to `0.5` if you want one side to be half the length of the other side. Omit this flag to keep the
-        input format. This option is particularly useful when an exact output format ratio is required for
-        example when planning to put the 3d printed model into a picture frame. Using this option will always
-        try to cut the shorter side of the input tiff. By default None
+    ensure_squared : bool, optional
+        Boolean flag to toggle whether the output model should be squared in x- and y-dimension. When enabled
+        it will remove pixels from one side to ensure same length for both sides. By default False
     split_area_in_tiles : str, optional
         Split the selected bounding box into tiles with this option. The allowed format of a given string is
         "nxm" e.g. "1x1", "2x3", "4x4" or similar, where "1x1" would not split at all and result in only
@@ -219,14 +216,14 @@ def convert_bbox_to_stl(
     tiff = rio.open(path_to_tiff)
     elevation_scale = determine_elevation_scale(tiff, model_size)
     array = tiff_to_array(tiff)
-    if cut_to_format_ratio:
-        array = cut_array_to_format(array, cut_to_format_ratio)
+    if ensure_squared:
+        array = cut_array_to_square(array)
 
     desired_size = _get_desired_size(
         array=array,
         x=model_size / tiles.x,
         y=model_size / tiles.y,
-        cut_to_format_ratio=cut_to_format_ratio,
+        ensure_squared=ensure_squared,
     )
 
     tiled_arrays = split_array_into_tiles(array, tiles)
