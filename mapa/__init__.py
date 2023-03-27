@@ -82,7 +82,6 @@ def convert_tiff_to_stl(
     z_scale: float,
     ensure_squared: bool = False,
 ) -> Path:
-
     output_file = verify_input_and_output_are_valid(input=input_file, output=output_file)
 
     tiff = rio.open(input_file)
