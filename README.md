@@ -55,7 +55,7 @@ a feeling of how the output STL will look like:
 ```
 dem2stl --demo
 ```
-If you have your tiff file ready, you may run something like
+If you have your tiff file at hand, you may run something like
 ```
 dem2stl --input your_file.tiff --output output.stl --model-size 200 --z-offset 3.0 --z-scale 1.5
 ```

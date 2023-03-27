@@ -195,9 +195,10 @@ def test_mapa__index_error(output_file) -> None:
 @pytest.mark.parametrize("compress", (False, True))
 def test_mapa__split_area_into_tiles__success(hawaii_bbox, tmp_path, compress) -> None:
     size = 100
+    output_path = Path(tmp_path, "foo")
     output = convert_bbox_to_stl(
         bbox_geometry=hawaii_bbox,
-        output_file="foo",
+        output_file=output_path,
         split_area_in_tiles="2x2",
         model_size=size,
         cut_to_format_ratio=1.0,
