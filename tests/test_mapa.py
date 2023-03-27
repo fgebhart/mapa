@@ -32,7 +32,7 @@ def test_create_stl_for_bbox__z_scale_from_geotiff(hawaii_bbox, output_file):
         max_res=True,
         z_offset=5,
         z_scale=0.3,
-        cut_to_format_ratio=1.0,
+        ensure_squared=True,
         compress=False,
         allow_caching=False,
     )
@@ -51,7 +51,7 @@ def test_create_stl_for_bbox__z_scale_from_geotiff(hawaii_bbox, output_file):
         max_res=True,
         z_offset=10,
         z_scale=0.3,
-        cut_to_format_ratio=1.0,
+        ensure_squared=True,
         compress=False,
         allow_caching=False,
     )
@@ -69,28 +69,13 @@ def test_convert_bbox_to_stl__verify_x_y_dimensions(output_file, hawaii_bbox) ->
         model_size=size,
         z_offset=None,
         output_file=output_file,
-        cut_to_format_ratio=1.0,  # format ratio should equal a square
+        ensure_squared=True,  # format ratio should equal a square
         allow_caching=False,
         compress=False,
     )
 
     x, y, z1 = get_dimensions_of_stl_file(path)
     assert x == y == size
-
-    path = convert_bbox_to_stl(
-        bbox_geometry=hawaii_bbox,
-        model_size=size,
-        z_offset=None,
-        output_file=output_file,
-        cut_to_format_ratio=1 / 2,  # one side should be half the length of the second side
-        allow_caching=False,
-        compress=False,
-    )
-
-    x, y, z2 = get_dimensions_of_stl_file(path)
-    assert x == 2 * y == size
-    # z dimension should stay the same
-    assert math.isclose(z1, z2, rel_tol=0.05)
 
 
 def test__get_tiff_for_bbox(hawaii_bbox) -> None:
@@ -122,7 +107,7 @@ def test_convert_bbox_to_stl__ensure_z_offset_is_correct(output_file, hawaii_bbo
         bbox_geometry=hawaii_bbox,
         output_file=output_file,
         z_offset=None,  # setting z_offset=None will use natural offset, i.e. height above sea level
-        cut_to_format_ratio=1.0,
+        ensure_squared=True,
         allow_caching=False,
         compress=False,
     )
@@ -132,7 +117,7 @@ def test_convert_bbox_to_stl__ensure_z_offset_is_correct(output_file, hawaii_bbo
         bbox_geometry=hawaii_bbox,
         output_file=output_file,
         z_offset=10.0,  # setting z_offset=10.0 will ensure an offset of 10.0mm
-        cut_to_format_ratio=1.0,
+        ensure_squared=True,
         allow_caching=False,
         compress=False,
     )
@@ -142,7 +127,7 @@ def test_convert_bbox_to_stl__ensure_z_offset_is_correct(output_file, hawaii_bbo
         bbox_geometry=hawaii_bbox,
         output_file=output_file,
         z_offset=0.0,  # setting z_offset=0.0 will ensure an offset of 0.0mm
-        cut_to_format_ratio=1.0,
+        ensure_squared=True,
         allow_caching=False,
         compress=False,
     )
@@ -201,7 +186,7 @@ def test_mapa__split_area_into_tiles__success(hawaii_bbox, tmp_path, compress) -
         output_file=output_path,
         split_area_in_tiles="2x2",
         model_size=size,
-        cut_to_format_ratio=1.0,
+        ensure_squared=True,
         compress=compress,
     )
 
@@ -235,7 +220,7 @@ def test_mapa__split_area_into_tiles__one_by_two(hawaii_bbox, output_file) -> No
         output_file=output_file,
         split_area_in_tiles="1x2",
         model_size=size,
-        cut_to_format_ratio=1.0,
+        ensure_squared=True,
         compress=False,
     )
     assert isinstance(output, list)
@@ -256,7 +241,7 @@ def test_mapa__split_area_into_tiles__one_by_two(hawaii_bbox, output_file) -> No
         output_file=output_file,
         split_area_in_tiles="2x1",
         model_size=size,
-        cut_to_format_ratio=1.0,
+        ensure_squared=True,
         compress=False,
     )
     assert isinstance(output, list)
@@ -296,8 +281,8 @@ def test_mapa__split_area_into_tiles__area_too_small(output_file) -> None:
         )
 
 
-@pytest.mark.parametrize("cut_to_format_ratio", (None, 1.0))
-def test_mapa__cut_to_format_ratio__two_by_two(cut_to_format_ratio, output_file, hawaii_bbox) -> None:
+@pytest.mark.parametrize("ensure_squared", (False, True))
+def test_mapa__ensure_squared__two_by_two(ensure_squared, output_file, hawaii_bbox) -> None:
     # creating 2 by 2 tiles
     size = 100
     output = convert_bbox_to_stl(
@@ -305,7 +290,7 @@ def test_mapa__cut_to_format_ratio__two_by_two(cut_to_format_ratio, output_file,
         output_file=output_file,
         split_area_in_tiles="2x2",
         model_size=size,
-        cut_to_format_ratio=cut_to_format_ratio,
+        ensure_squared=ensure_squared,
         compress=False,
     )
     assert isinstance(output, list)
@@ -323,14 +308,13 @@ def test_mapa__cut_to_format_ratio__two_by_two(cut_to_format_ratio, output_file,
     assert y3 + y4 == size
 
 
-def test_mapa__interplay_of_cut_to_format_ratio_with_tiling(output_file, hawaii_bbox) -> None:
+def test_mapa__interplay_of_ensure_squared_with_tiling(output_file, hawaii_bbox) -> None:
     size = 100
     output = convert_bbox_to_stl(
         bbox_geometry=hawaii_bbox,
         output_file=output_file,
         split_area_in_tiles="1x2",
         model_size=size,
-        cut_to_format_ratio=None,
         compress=False,
     )
     assert isinstance(output, list)
@@ -343,14 +327,14 @@ def test_mapa__interplay_of_cut_to_format_ratio_with_tiling(output_file, hawaii_
     assert y1 == size / 2
     assert y2 == size / 2
 
-    # now setting cut_to_format_ratio to 1.0 means we want the combined stl file to be squared, since bbox is already
+    # now setting ensure_squared to True means we want the combined stl file to be squared, since bbox is already
     # squared we expect the same results
     output = convert_bbox_to_stl(
         bbox_geometry=hawaii_bbox,
         output_file=output_file,
         split_area_in_tiles="1x2",
         model_size=size,
-        cut_to_format_ratio=1.0,
+        ensure_squared=True,
         compress=False,
     )
     assert isinstance(output, list)
@@ -363,59 +347,9 @@ def test_mapa__interplay_of_cut_to_format_ratio_with_tiling(output_file, hawaii_
     assert y1 == size / 2
     assert y2 == size / 2
 
-    # setting cut_to_format_ratio = 0.5 means one side is only half of the other and having tiles of 1*2 means y
-    # dimension equals a quater of the size
-    output = convert_bbox_to_stl(
-        bbox_geometry=hawaii_bbox,
-        output_file=output_file,
-        split_area_in_tiles="1x2",
-        model_size=size,
-        cut_to_format_ratio=0.5,
-        compress=False,
-    )
-    assert isinstance(output, list)
-    assert len(output) == 2
-
-    x1, y1, _ = get_dimensions_of_stl_file(output[0])
-    x2, y2, _ = get_dimensions_of_stl_file(output[1])
-    assert x1 == size
-    assert x2 == size
-    assert y1 == size / 4
-    assert y2 == size / 4
-
-    # keeping cut_to_format_ratio = 0.5 and setting tiles to 2*2 will result in 4 stls where the sum of the y distance
-    # equals the half of the size
-    output = convert_bbox_to_stl(
-        bbox_geometry=hawaii_bbox,
-        output_file=output_file,
-        split_area_in_tiles="2x2",
-        model_size=size,
-        cut_to_format_ratio=0.5,
-        compress=False,
-    )
-    assert isinstance(output, list)
-    assert len(output) == 4
-
-    x1, y1, _ = get_dimensions_of_stl_file(output[0])
-    x2, y2, _ = get_dimensions_of_stl_file(output[1])
-    x3, y3, _ = get_dimensions_of_stl_file(output[2])
-    x4, y4, _ = get_dimensions_of_stl_file(output[3])
-    assert x1 == size / 2
-    assert x2 == size / 2
-    assert x3 == size / 2
-    assert x4 == size / 2
-    assert y1 == size / 4
-    assert y2 == size / 4
-    assert y3 == size / 4
-    assert y4 == size / 4
-    assert x1 + x2 == size
-    assert x3 + x4 == size
-    assert y1 + y2 == size / 2
-    assert y3 + y4 == size / 2
-
 
 def test_mapa__tiling_with_rectangular_bbox(geojson_bbox_two_stac_items, output_file, mock_max_res) -> None:
-    # using cut_to_format_ratio=None
+    # don't use squared output
     size = 100
     tiling = "2x3"
     output = convert_bbox_to_stl(
@@ -423,7 +357,7 @@ def test_mapa__tiling_with_rectangular_bbox(geojson_bbox_two_stac_items, output_
         output_file=output_file,
         split_area_in_tiles=tiling,
         model_size=size,
-        cut_to_format_ratio=None,
+        ensure_squared=False,
         compress=False,
     )
     assert isinstance(output, list)
@@ -444,13 +378,13 @@ def test_mapa__tiling_with_rectangular_bbox(geojson_bbox_two_stac_items, output_
     assert y1 != size
     assert y1 != x1
 
-    # now using cut_to_format_ratio=1.0 i.e. output shape should a square
+    # now setting output shape should to be squares
     output = convert_bbox_to_stl(
         bbox_geometry=geojson_bbox_two_stac_items,
         output_file=output_file,
         split_area_in_tiles=tiling,
         model_size=size,
-        cut_to_format_ratio=1.0,
+        ensure_squared=True,
         compress=False,
     )
 
@@ -468,31 +402,6 @@ def test_mapa__tiling_with_rectangular_bbox(geojson_bbox_two_stac_items, output_
     assert y1 == y2 == y3 == y4 == y5 == y6
     assert y1 + y2 + y3 == size
     assert y4 + y5 + y6 == size
-
-    # now using cut_to_format_ratio=0.5 i.e. one side is half of the other side
-    output = convert_bbox_to_stl(
-        bbox_geometry=geojson_bbox_two_stac_items,
-        output_file=output_file,
-        split_area_in_tiles=tiling,
-        model_size=size,
-        cut_to_format_ratio=0.5,
-        compress=False,
-    )
-
-    x1, y1, _ = get_dimensions_of_stl_file(output[0])
-    x2, y2, _ = get_dimensions_of_stl_file(output[1])
-    x3, y3, _ = get_dimensions_of_stl_file(output[2])
-    x4, y4, _ = get_dimensions_of_stl_file(output[3])
-    x5, y5, _ = get_dimensions_of_stl_file(output[4])
-    x6, y6, _ = get_dimensions_of_stl_file(output[5])
-
-    assert x1 == x2 == x3 == x4 == x5 == x6
-    assert x1 + x2 == size
-    assert x3 + x4 == size
-    assert x5 + x6 == size
-    assert y1 == y2 == y3 == y4 == y5 == y6
-    assert y1 + y2 + y3 == size / 2
-    assert y4 + y5 + y6 == size / 2
 
 
 def test_custom_caching_path(output_file, geojson_bbox, tmp_path) -> None:
