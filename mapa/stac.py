@@ -16,7 +16,6 @@ log = logging.getLogger(__name__)
 
 
 def _download_file(url: str, local_file: Path) -> Path:
-    log.info(f"downloading {url} to {local_file}")
     request.urlretrieve(url, local_file)
     return local_file
 
@@ -60,7 +59,6 @@ def fetch_stac_items_for_bbox(
     )
     search = client.search(collections=[conf.PLANETARY_COMPUTER_COLLECTION], bbox=bbox)
     items = list(search.items())
-    log.info(f"got items: {items}")
     n = len(items)
     if progress_bar:
         progress_bar.steps += n
