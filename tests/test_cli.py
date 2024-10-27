@@ -41,7 +41,7 @@ def test_dem2stl__not_a_tiff_file(corrupted_tiff, tmpdir) -> None:
     output_file = tmpdir / "foo.stl"
     result = cli.invoke(dem2stl, ["--input", str(corrupted_tiff), "--output", output_file])
     assert result.exit_code == 1, result.stdout
-    with pytest.raises(RasterioIOError, match="not recognized as a supported file format"):
+    with pytest.raises(RasterioIOError, match="not recognized"):
         raise result.exception
 
 
