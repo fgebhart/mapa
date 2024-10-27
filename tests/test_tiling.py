@@ -66,7 +66,9 @@ def test_split_array_into_tiles__square() -> None:
             [5, 6],
         ]
     )
-    with pytest.raises(ValueError, match="Input array is too small to be split into tiles."):
+    with pytest.raises(
+        ValueError, match="Input array is too small to be split into tiles."
+    ):
         split_array_into_tiles(two_by_two, tiles_format=TileFormat(x=3, y=3))
 
 
@@ -106,7 +108,9 @@ def test_split_array_into_tiles__rect() -> None:
         np.testing.assert_array_equal(expected[i], blocks[i])
 
     # array being too small
-    with pytest.raises(ValueError, match="Input array is too small to be split into tiles."):
+    with pytest.raises(
+        ValueError, match="Input array is too small to be split into tiles."
+    ):
         split_array_into_tiles(array, tiles_format=TileFormat(x=10, y=10))
 
 

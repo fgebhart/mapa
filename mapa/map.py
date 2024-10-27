@@ -8,11 +8,18 @@ ZOOM = 4
 
 
 def show_map(center: List[float] = CENTER, zoom: int = ZOOM) -> Tuple[Map, DrawControl]:
-    m = Map(center=center, zoom=zoom, scroll_wheel_zoom=True, layout=Layout(height="600px"))
+    m = Map(
+        center=center, zoom=zoom, scroll_wheel_zoom=True, layout=Layout(height="600px")
+    )
     m.add_control(ScaleControl(position="bottomleft"))
     m.add_layer(basemap_to_tiles(basemaps.OpenTopoMap))
 
-    dc = DrawControl(rectangle={"shapeOptions": {"color": "#0000FF"}}, polyline={}, polygon={}, circlemarker={})
+    dc = DrawControl(
+        rectangle={"shapeOptions": {"color": "#0000FF"}},
+        polyline={},
+        polygon={},
+        circlemarker={},
+    )
 
     def handle_draw(target, action, geo_json):
         print("Rectangle detected, execute next cells to continue!")

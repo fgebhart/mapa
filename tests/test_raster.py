@@ -79,7 +79,9 @@ def test_clip_tiff_to_bbox(test_tiff) -> None:
     assert test_array.shape > clipped_array.shape
     overlap = np.isin(clipped_array, test_array)
     # remove all False entries
-    overlap = overlap[np.ix_(~np.all(overlap == False, axis=1), ~np.all(overlap == False, axis=0))]  # noqa: E712
+    overlap = overlap[
+        np.ix_(~np.all(overlap == False, axis=1), ~np.all(overlap == False, axis=0))  # noqa: E712
+    ]
     # need to add +1 since rasterio seems to add additional row and col with all zeros...
     assert overlap.shape[0] + 1 == clipped_array.shape[0]
     assert overlap.shape[1] + 1 == clipped_array.shape[1]
@@ -234,7 +236,9 @@ def test_remove_empty_first_and_last_rows_and_cols() -> None:
 
 
 def test_determine_z_scale(geojson_bbox, mock_file_download) -> None:
-    tiff_path = fetch_stac_items_for_bbox(geojson_bbox, allow_caching=False, cache_dir=TMPDIR())
+    tiff_path = fetch_stac_items_for_bbox(
+        geojson_bbox, allow_caching=False, cache_dir=TMPDIR()
+    )
     tiff = rio.open(tiff_path[0])
     scale = determine_elevation_scale(tiff, model_size=200)
     expected_scale = 0.0013862643986006134

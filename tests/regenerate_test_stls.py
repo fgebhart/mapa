@@ -12,8 +12,22 @@ if __name__ == "__main__":
 
     ascii_output = Path(__file__).parent / "stl" / "hawaii_ascii.stl"
     print(f"regenerating ascii stl file: {ascii_output}")
-    cli.invoke(dem2stl, ["--input", str(test_tiff), "--as-ascii", "--output", ascii_output, "--model-size", 200])
+    cli.invoke(
+        dem2stl,
+        [
+            "--input",
+            str(test_tiff),
+            "--as-ascii",
+            "--output",
+            ascii_output,
+            "--model-size",
+            200,
+        ],
+    )
 
     binary_output = Path(__file__).parent / "stl" / "hawaii_binary.stl"
     print(f"regenerating binary stl file: {binary_output}")
-    cli.invoke(dem2stl, ["--input", str(test_tiff), "--output", binary_output, "--model-size", 200])
+    cli.invoke(
+        dem2stl,
+        ["--input", str(test_tiff), "--output", binary_output, "--model-size", 200],
+    )

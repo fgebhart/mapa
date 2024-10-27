@@ -6,7 +6,12 @@ from zipfile import ZipFile
 import pytest
 import rasterio as rio
 
-from mapa import _fetch_merge_and_clip_tiffs, _get_tiff_for_bbox, caching, convert_bbox_to_stl
+from mapa import (
+    _fetch_merge_and_clip_tiffs,
+    _get_tiff_for_bbox,
+    caching,
+    convert_bbox_to_stl,
+)
 from mapa.stac import _turn_geojson_into_bbox
 from mapa.stl_file import get_dimensions_of_stl_file
 from mapa.utils import TMPDIR, path_to_clipped_tiff, path_to_merged_tiff
@@ -87,7 +92,9 @@ def test__fetch_merge_and_clip_tiffs(geojson_bbox_two_stac_items) -> None:
     cache_dir = TMPDIR()
     bbox_hash = caching.get_hash_of_geojson(geojson_bbox_two_stac_items)
     assert isinstance(bbox_hash, str)
-    tiff = _fetch_merge_and_clip_tiffs(geojson_bbox_two_stac_items, bbox_hash, allow_caching=True, cache_dir=cache_dir)
+    tiff = _fetch_merge_and_clip_tiffs(
+        geojson_bbox_two_stac_items, bbox_hash, allow_caching=True, cache_dir=cache_dir
+    )
     assert tiff.is_file()
     assert path_to_merged_tiff(bbox_hash, cache_dir=cache_dir).is_file()
     assert path_to_clipped_tiff(bbox_hash, cache_dir=cache_dir).is_file()
@@ -102,7 +109,9 @@ def test__fetch_merge_and_clip_tiffs(geojson_bbox_two_stac_items) -> None:
     assert math.isclose(data.bounds.top, top, rel_tol=0.0001)
 
 
-def test_convert_bbox_to_stl__ensure_z_offset_is_correct(output_file, hawaii_bbox) -> None:
+def test_convert_bbox_to_stl__ensure_z_offset_is_correct(
+    output_file, hawaii_bbox
+) -> None:
     path1 = convert_bbox_to_stl(
         bbox_geometry=hawaii_bbox,
         output_file=output_file,
@@ -138,7 +147,9 @@ def test_convert_bbox_to_stl__ensure_z_offset_is_correct(output_file, hawaii_bbo
     assert z1 > z2 > z3
 
 
-def test_convert_bbox_to_stl__progress_bar(output_file, geojson_bbox_two_stac_items, progress_bar, mock_max_res) -> None:
+def test_convert_bbox_to_stl__progress_bar(
+    output_file, geojson_bbox_two_stac_items, progress_bar, mock_max_res
+) -> None:
     convert_bbox_to_stl(
         bbox_geometry=geojson_bbox_two_stac_items,
         output_file=output_file,
@@ -269,7 +280,9 @@ def test_mapa__split_area_into_tiles__area_too_small(output_file) -> None:
             ]
         ],
     }
-    with pytest.raises(ValueError, match="Input array is too small to be split into tiles."):
+    with pytest.raises(
+        ValueError, match="Input array is too small to be split into tiles."
+    ):
         convert_bbox_to_stl(
             bbox_geometry=bbox,
             output_file=output_file,
@@ -282,7 +295,9 @@ def test_mapa__split_area_into_tiles__area_too_small(output_file) -> None:
 
 
 @pytest.mark.parametrize("ensure_squared", (False, True))
-def test_mapa__ensure_squared__two_by_two(ensure_squared, output_file, hawaii_bbox) -> None:
+def test_mapa__ensure_squared__two_by_two(
+    ensure_squared, output_file, hawaii_bbox
+) -> None:
     # creating 2 by 2 tiles
     size = 100
     output = convert_bbox_to_stl(
@@ -308,7 +323,9 @@ def test_mapa__ensure_squared__two_by_two(ensure_squared, output_file, hawaii_bb
     assert y3 + y4 == size
 
 
-def test_mapa__interplay_of_ensure_squared_with_tiling(output_file, hawaii_bbox) -> None:
+def test_mapa__interplay_of_ensure_squared_with_tiling(
+    output_file, hawaii_bbox
+) -> None:
     size = 100
     output = convert_bbox_to_stl(
         bbox_geometry=hawaii_bbox,
@@ -348,7 +365,9 @@ def test_mapa__interplay_of_ensure_squared_with_tiling(output_file, hawaii_bbox)
     assert y2 == size / 2
 
 
-def test_mapa__tiling_with_rectangular_bbox(geojson_bbox_two_stac_items, output_file, mock_max_res) -> None:
+def test_mapa__tiling_with_rectangular_bbox(
+    geojson_bbox_two_stac_items, output_file, mock_max_res
+) -> None:
     # don't use squared output
     size = 100
     tiling = "2x3"

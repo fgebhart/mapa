@@ -16,7 +16,9 @@ from mapa.utils import path_to_clipped_tiff, path_to_merged_tiff
 log = logging.getLogger(__name__)
 
 
-def clip_tiff_to_bbox(input_tiff: Path, bbox_geometry: dict, bbox_hash: str, cache_dir: Path) -> Path:
+def clip_tiff_to_bbox(
+    input_tiff: Path, bbox_geometry: dict, bbox_hash: str, cache_dir: Path
+) -> Path:
     log.debug("🔪  clipping region of interest...")
     data = rio.open(input_tiff)
     out_img, out_transform = mask(data, shapes=[bbox_geometry], crop=True)

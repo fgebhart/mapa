@@ -36,7 +36,7 @@ def test_create_zip_archive(file_a, file_b, tmp_path) -> None:
 
     # zip files to archive
     output = Path(tmp_path) / "output.zip"
-    zip_file = create_zip_archive(files=[file_a, file_b], output_file=output)
+    create_zip_archive(files=[file_a, file_b], output_file=output)
     assert output.is_file()
 
     with ZipFile(output) as zip_file:
@@ -64,7 +64,11 @@ def test_create_zip_archive(file_a, file_b, tmp_path) -> None:
 
 def test_create_zip_archive__compression_impact(test_stl_binary, output_file) -> None:
     uncompressed = test_stl_binary.stat().st_size
-    compressed = create_zip_archive(files=[test_stl_binary], output_file=f"{output_file}.zip").stat().st_size
+    compressed = (
+        create_zip_archive(files=[test_stl_binary], output_file=f"{output_file}.zip")
+        .stat()
+        .st_size
+    )
 
     # compressing a usual STL file reduces the size by more than a factor of 4
     assert compressed < uncompressed / 4
