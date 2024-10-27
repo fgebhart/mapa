@@ -6,6 +6,7 @@ from urllib import request
 import geojson
 from pystac.item import Item
 from pystac_client import Client
+from planetary_computer import sign_inplace
 
 from mapa import conf
 from mapa.exceptions import NoSTACItemFound
@@ -32,7 +33,9 @@ def _turn_geojson_into_bbox(geojson_bbox: dict) -> List[float]:
     return _bbox(list(geojson.utils.coords(geojson.Polygon(coordinates))))
 
 
-def _get_tiff_file(stac_item: Item, allow_caching: bool, cache_dir: Path, count: int, max: int) -> Path:
+def _get_tiff_file(
+    stac_item: Item, allow_caching: bool, cache_dir: Path, count: int, max: int
+) -> Path:
     tiff = cache_dir / f"{stac_item.id}.tiff"
     if tiff.is_file() and allow_caching:
         log.info(f"🚀  {count}/{max} using cached stac item {stac_item.id}")
@@ -43,10 +46,17 @@ def _get_tiff_file(stac_item: Item, allow_caching: bool, cache_dir: Path, count:
 
 
 def fetch_stac_items_for_bbox(
-    geojson: dict, allow_caching: bool, cache_dir: Path, progress_bar: Union[None, ProgressBar] = None
+    geojson: dict,
+    allow_caching: bool,
+    cache_dir: Path,
+    progress_bar: Union[None, ProgressBar] = None,
 ) -> List[Path]:
     bbox = _turn_geojson_into_bbox(geojson)
-    client = Client.open(conf.PLANETARY_COMPUTER_API_URL, ignore_conformance=True)
+    client = Client.open(
+        conf.PLANETARY_COMPUTER_API_URL,
+        ignore_conformance=True,
+        modifier=sign_inplace,
+    )
     search = client.search(collections=[conf.PLANETARY_COMPUTER_COLLECTION], bbox=bbox)
     items = list(search.items())
     n = len(items)
@@ -61,4 +71,6 @@ def fetch_stac_items_for_bbox(
                 progress_bar.step()
         return files
     else:
-        raise NoSTACItemFound("Could not find the desired STAC item for the given bounding box.")
+        raise NoSTACItemFound(
+            "Could not find the desired STAC item for the given bounding box."
+        )

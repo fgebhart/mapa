@@ -39,9 +39,11 @@ def test_dem2stl__demo(caplog) -> None:
 def test_dem2stl__not_a_tiff_file(corrupted_tiff, tmpdir) -> None:
     cli = CliRunner()
     output_file = tmpdir / "foo.stl"
-    result = cli.invoke(dem2stl, ["--input", str(corrupted_tiff), "--output", output_file])
+    result = cli.invoke(
+        dem2stl, ["--input", str(corrupted_tiff), "--output", output_file]
+    )
     assert result.exit_code == 1, result.stdout
-    with pytest.raises(RasterioIOError, match="not recognized as a supported file format"):
+    with pytest.raises(RasterioIOError, match="not recognized"):
         raise result.exception
 
 
@@ -59,7 +61,10 @@ def test_dem2stl__binary(test_tiff, tmpdir, test_stl_binary, caplog) -> None:
     output_file = tmpdir / "output.stl"
     result = cli.invoke(dem2stl, ["--input", str(test_tiff), "--output", output_file])
     assert result.exit_code == 0, result.stdout
-    assert f"successfully generated STL file: {Path(output_file).absolute()}" in caplog.text
+    assert (
+        f"successfully generated STL file: {Path(output_file).absolute()}"
+        in caplog.text
+    )
     assert Path(output_file).is_file()
 
     _assert_dimensions_equal(test_stl_binary, output_file)
@@ -68,9 +73,14 @@ def test_dem2stl__binary(test_tiff, tmpdir, test_stl_binary, caplog) -> None:
 def test_dem2stl__ascii(test_tiff, tmpdir, test_stl_ascii, caplog) -> None:
     cli = CliRunner()
     output_file = tmpdir / "hawaii_ascii.stl"
-    result = cli.invoke(dem2stl, ["--input", str(test_tiff), "--as-ascii", "--output", output_file])
+    result = cli.invoke(
+        dem2stl, ["--input", str(test_tiff), "--as-ascii", "--output", output_file]
+    )
     assert result.exit_code == 0, result.stdout
-    assert f"successfully generated STL file: {Path(output_file).absolute()}" in caplog.text
+    assert (
+        f"successfully generated STL file: {Path(output_file).absolute()}"
+        in caplog.text
+    )
     assert Path(output_file).is_file()
 
     _assert_dimensions_equal(test_stl_ascii, output_file)

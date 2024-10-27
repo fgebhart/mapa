@@ -14,7 +14,9 @@ from mapa.algorithm import (
 
 
 def test_create_raster() -> None:
-    with pytest.raises(ValueError, match="not enough values to unpack \\(expected 2, got 0\\)"):
+    with pytest.raises(
+        ValueError, match="not enough values to unpack \\(expected 2, got 0\\)"
+    ):
         one = np.array(1)
         max_x, max_y = one.shape
         _create_raster(one, max_x, max_y)
@@ -199,7 +201,11 @@ def test_compute_all_triangles__min_occurrences() -> None:
         ]
     )
     triangles = compute_all_triangles(
-        array, desired_size=ModelSize(200, 200), z_offset=1.0, z_scale=2.0, elevation_scale=10.0
+        array,
+        desired_size=ModelSize(200, 200),
+        z_offset=1.0,
+        z_scale=2.0,
+        elevation_scale=10.0,
     )
 
     # verify every every point occurs at least 4 times
@@ -218,7 +224,9 @@ def test__compute_triangles_of_bottom() -> None:
     )
 
     max_x, max_y = array.shape
-    bottom_triangles = _compute_triangles_of_bottom(max_x=max_x, max_y=max_y, x_scale=1.0, y_scale=1.0)
+    bottom_triangles = _compute_triangles_of_bottom(
+        max_x=max_x, max_y=max_y, x_scale=1.0, y_scale=1.0
+    )
 
     expected = np.array(
         [

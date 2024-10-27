@@ -3,7 +3,12 @@ from mapa.utils import TMPDIR
 
 
 def test__turn_geojson_into_bbox(geojson_bbox):
-    assert _turn_geojson_into_bbox(geojson_bbox) == [8.076906, 48.098505, 8.107111, 48.115011]
+    assert _turn_geojson_into_bbox(geojson_bbox) == [
+        8.076906,
+        48.098505,
+        8.107111,
+        48.115011,
+    ]
 
 
 def test_fetch_stac_items_for_bbox(mock_file_download):
@@ -19,7 +24,9 @@ def test_fetch_stac_items_for_bbox(mock_file_download):
             ]
         ],
     }
-    tiffs = fetch_stac_items_for_bbox(geojson=multiple_stac_items_bbox, allow_caching=False, cache_dir=TMPDIR())
+    tiffs = fetch_stac_items_for_bbox(
+        geojson=multiple_stac_items_bbox, allow_caching=False, cache_dir=TMPDIR()
+    )
     assert len(tiffs) == 2
 
 

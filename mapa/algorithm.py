@@ -150,7 +150,12 @@ def _create_raster(array: npt.ArrayLike, max_x: int, max_y: int) -> np.ndarray:
                 raster[ix][iy] = array[ix][iy]
             else:
                 # z value in raster is average of four neighbors
-                raster[ix][iy] = (array[ix][iy] + array[ix - 1][iy] + array[ix][iy - 1] + array[ix - 1][iy - 1]) / 4
+                raster[ix][iy] = (
+                    array[ix][iy]
+                    + array[ix - 1][iy]
+                    + array[ix][iy - 1]
+                    + array[ix - 1][iy - 1]
+                ) / 4
     return raster
 
 
@@ -203,7 +208,9 @@ def _compute_triangles_of_3d_surface(
                 # first vertex
                 triangles[ix, iy, 2, 0, 0] = (ix + 1) * x_scale
                 triangles[ix, iy, 2, 0, 1] = (iy + 1) * y_scale
-                triangles[ix, iy, 2, 0, 2] = (raster[ix + 1, iy + 1]) * z_scale + z_offset
+                triangles[ix, iy, 2, 0, 2] = (
+                    (raster[ix + 1, iy + 1]) * z_scale + z_offset
+                )
                 # second vertex
                 triangles[ix, iy, 2, 1, 0] = ix * x_scale
                 triangles[ix, iy, 2, 1, 1] = (iy + 1) * y_scale
@@ -225,13 +232,21 @@ def _compute_triangles_of_3d_surface(
                 # third vertex
                 triangles[ix, iy, 3, 2, 0] = (ix + 1) * x_scale
                 triangles[ix, iy, 3, 2, 1] = (iy + 1) * y_scale
-                triangles[ix, iy, 3, 2, 2] = (raster[ix + 1, iy + 1]) * z_scale + z_offset
+                triangles[ix, iy, 3, 2, 2] = (
+                    (raster[ix + 1, iy + 1]) * z_scale + z_offset
+                )
 
     return triangles.reshape((max_x * max_y * 4, 3, 3))
 
 
 def _compute_triangles_of_body_side(
-    raster: npt.ArrayLike, max_x: int, max_y: int, x_scale: float, y_scale: float, z_scale: float, z_offset: float
+    raster: npt.ArrayLike,
+    max_x: int,
+    max_y: int,
+    x_scale: float,
+    y_scale: float,
+    z_scale: float,
+    z_offset: float,
 ) -> np.ndarray:
     # loop over raster and build triangles when in first and last col and row
     triangles = np.full((max_x * 4 + max_y * 4, 3, 3), -1.0, dtype=np.float64)
@@ -354,7 +369,9 @@ def _compute_triangles_of_body_side(
     return triangles
 
 
-def _compute_triangles_of_bottom(max_x: int, max_y: int, x_scale: float, y_scale: float) -> np.ndarray:
+def _compute_triangles_of_bottom(
+    max_x: int, max_y: int, x_scale: float, y_scale: float
+) -> np.ndarray:
     # first row
     fr_triangles = np.full((max_x - 1, 3, 3), -1.0, dtype=np.float64)
     for i, cnt in enumerate(range(0, max_x - 1)):
@@ -428,16 +445,22 @@ def _compute_triangles_of_bottom(max_x: int, max_y: int, x_scale: float, y_scale
     center_triangles[1, 2, 1] = 1 * y_scale
     center_triangles[1, 2, 2] = 0
 
-    return np.vstack((fr_triangles, lr_triangles, fc_triangles, lc_triangles, center_triangles))
+    return np.vstack(
+        (fr_triangles, lr_triangles, fc_triangles, lc_triangles, center_triangles)
+    )
 
 
-def _determine_z_offset(z_offset: Union[None, float], minimum: float, elevation_scale: float) -> float:
+def _determine_z_offset(
+    z_offset: Union[None, float], minimum: float, elevation_scale: float
+) -> float:
     if z_offset is None:
         # using the natural height, i.e. islands will have an z_offset of ~0 and mountains will have a larger z_offset
         return minimum * elevation_scale
     else:
         if z_offset < 0:
-            log.warning("☝️  Warning: Be careful using negative z_offsets, as it might break your 3D model.")
+            log.warning(
+                "☝️  Warning: Be careful using negative z_offsets, as it might break your 3D model."
+            )
         # subtract scaled minimum from z_offset to ensure the input z_offset will remain
         return z_offset - minimum * elevation_scale
 
@@ -480,14 +503,24 @@ def compute_all_triangles(
         z_scale=combined_z_scale,
         z_offset=z_offset,
     )
-    bottom_triangles = _compute_triangles_of_bottom(max_x=max_x, max_y=max_y, x_scale=x_scale, y_scale=y_scale)
+    bottom_triangles = _compute_triangles_of_bottom(
+        max_x=max_x, max_y=max_y, x_scale=x_scale, y_scale=y_scale
+    )
     return np.vstack((dem_triangles, side_triangles, bottom_triangles))
 
 
 def reduce_resolution(array: npt.ArrayLike, bin_factor: int) -> np.ndarray:
     strided = as_strided(
         array,
-        shape=(array.shape[0] // bin_factor, array.shape[1] // bin_factor, bin_factor, bin_factor),
-        strides=((array.strides[0] * bin_factor, array.strides[1] * bin_factor) + array.strides),
+        shape=(
+            array.shape[0] // bin_factor,
+            array.shape[1] // bin_factor,
+            bin_factor,
+            bin_factor,
+        ),
+        strides=(
+            (array.strides[0] * bin_factor, array.strides[1] * bin_factor)
+            + array.strides
+        ),
     )
     return strided.mean(axis=-1).mean(axis=-1)

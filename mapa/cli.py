@@ -14,7 +14,9 @@ log = logging.getLogger(__name__)
 @click.option("--input", help="Path to input TIFF file.")
 @click.option("--output", help="Path to output STL file.")
 @click.option(
-    "--as-ascii", is_flag=True, help="Save output STL as ascii file. If not provided, output file will be binary."
+    "--as-ascii",
+    is_flag=True,
+    help="Save output STL as ascii file. If not provided, output file will be binary.",
 )
 @click.option(
     "--model-size",
@@ -46,7 +48,9 @@ log = logging.getLogger(__name__)
         f"Defaults to {conf.DEFAULT_Z_SCALE}."
     ),
 )
-@click.option("--demo", is_flag=True, help="Converts a demo tif of Hawaii into a STL file.")
+@click.option(
+    "--demo", is_flag=True, help="Converts a demo tif of Hawaii into a STL file."
+)
 @click.option(
     "--ensure-squared",
     is_flag=True,
@@ -78,7 +82,9 @@ def dem2stl(
         max_res = True
         z_scale = 2.5
 
-    convert_tiff_to_stl(input, as_ascii, model_size, output, max_res, z_offset, z_scale, ensure_squared)
+    convert_tiff_to_stl(
+        input, as_ascii, model_size, output, max_res, z_offset, z_scale, ensure_squared
+    )
 
 
 @click.command(help="🗺 Draw a bounding box on a map and turn it into a STL file 🗺")

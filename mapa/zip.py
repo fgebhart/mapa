@@ -9,7 +9,9 @@ log = logging.getLogger(__name__)
 
 
 def create_zip_archive(
-    files: List[Path], output_file: Union[str, Path], progress_bar: Union[ProgressBar, None] = None
+    files: List[Path],
+    output_file: Union[str, Path],
+    progress_bar: Union[ProgressBar, None] = None,
 ) -> Path:
     log.info(f"📦  compressing stl files: {[f.name for f in files]}")
     with zipfile.ZipFile(output_file, "w", zipfile.ZIP_DEFLATED) as zip_file:
